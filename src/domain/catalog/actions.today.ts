@@ -1,0 +1,201 @@
+// Satisfies: REQ-004, REQ-007, DATA-004, D1, D3, D4
+// Curated daily routine actions for winter smog conditions.
+
+import type { ActionEntry } from './schema';
+
+export const TODAY_ACTIONS: readonly ActionEntry[] = [
+  {
+    id: 'ACT-001',
+    section: 'today',
+    titleKey: 'catalog.today.shift_outdoor_hours.title',
+    bodyKey: 'catalog.today.shift_outdoor_hours.body',
+    applicableIf: { minBandOrdinal: 2 },
+    cost: 'free',
+    effort: 1,
+    risks: [],
+    impact: {
+      benefitType: 'personal_exposure',
+      metric: 'pm25_inhalation',
+      effectFraction: { low: 0.2, high: 0.4 },
+      basis:
+        'Diurnal boundary layer height modeling shows 20-40% lower PM2.5 at solar midday vs early morning inversion.',
+      confidence: 'high',
+      sourceNote: 'US EPA / CPCB Diurnal Smog Profile Study (2022)',
+    },
+  },
+  {
+    id: 'ACT-002',
+    section: 'today',
+    titleKey: 'catalog.today.indoor_exercise_swap.title',
+    bodyKey: 'catalog.today.indoor_exercise_swap.body',
+    applicableIf: { minBandOrdinal: 3 },
+    cost: 'free',
+    effort: 1,
+    risks: ['Reduced cardiovascular intensity if space is constrained'],
+    impact: {
+      benefitType: 'personal_exposure',
+      metric: 'pm25_inhalation',
+      effectFraction: { low: 0.35, high: 0.6 },
+      basis:
+        'Minute ventilation increases 4-10x during aerobic exercise; moving indoors reduces particle deposition in lungs.',
+      confidence: 'high',
+      sourceNote: 'WHO Air Quality and Physical Activity Guidelines (2021)',
+    },
+  },
+  {
+    id: 'ACT-003',
+    section: 'today',
+    titleKey: 'catalog.today.n95_mask_outdoors.title',
+    bodyKey: 'catalog.today.n95_mask_outdoors.body',
+    applicableIf: { minBandOrdinal: 2 },
+    cost: 'low',
+    effort: 1,
+    risks: ['Discomfort, improper fit reduces efficacy; not recommended for children under 2'],
+    impact: {
+      benefitType: 'personal_exposure',
+      metric: 'pm25_inhalation',
+      effectFraction: { low: 0.7, high: 0.95 },
+      basis:
+        'Certified N95/FFP2 respirators filter >=95% of 0.3 micron aerosol under proper tight-seal conditions.',
+      confidence: 'high',
+      sourceNote: 'NIOSH Respirator Standards 42 CFR Part 84 & WHO PPE Guidance (2020)',
+    },
+  },
+  {
+    id: 'ACT-004',
+    section: 'today',
+    titleKey: 'catalog.today.school_kids_indoors.title',
+    bodyKey: 'catalog.today.school_kids_indoors.body',
+    applicableIf: { minBandOrdinal: 4 },
+    cost: 'free',
+    effort: 1,
+    risks: ['Cabin fever, screen time increase'],
+    impact: {
+      benefitType: 'personal_exposure',
+      metric: 'pm25_inhalation',
+      effectFraction: { low: 0.3, high: 0.55 },
+      basis:
+        'Children inhale more air per pound of body weight; restricting outdoor play on hazardous days cuts peak exposure.',
+      confidence: 'high',
+      sourceNote: 'American Academy of Pediatrics Policy Statement on Ambient Air Pollution (2021)',
+    },
+  },
+  {
+    id: 'ACT-005',
+    section: 'today',
+    titleKey: 'catalog.today.avoid_peak_traffic.title',
+    bodyKey: 'catalog.today.avoid_peak_traffic.body',
+    applicableIf: { minBandOrdinal: 2 },
+    cost: 'free',
+    effort: 2,
+    risks: ['Longer commute route if taking back streets'],
+    impact: {
+      benefitType: 'personal_exposure',
+      metric: 'pm25_inhalation',
+      effectFraction: { low: 0.15, high: 0.3 },
+      basis:
+        'Near-roadway ultra-fine and black carbon concentrations drop by 30-50% within 150 meters of arterial roads.',
+      confidence: 'medium',
+      sourceNote:
+        'Health Effects Institute (HEI) Traffic-Related Air Pollution Special Report (2022)',
+    },
+  },
+  {
+    id: 'ACT-006',
+    section: 'today',
+    titleKey: 'catalog.today.avoid_morning_smog.title',
+    bodyKey: 'catalog.today.avoid_morning_smog.body',
+    applicableIf: { minBandOrdinal: 3 },
+    cost: 'free',
+    effort: 1,
+    risks: [],
+    impact: {
+      benefitType: 'personal_exposure',
+      metric: 'pm25_inhalation',
+      effectFraction: { low: 0.25, high: 0.45 },
+      basis:
+        'Nocturnal cooling causes shallow surface temperature inversions, trapping ground pollutants until mid-morning.',
+      confidence: 'high',
+      sourceNote: 'CPCB Winter Air Quality Assessment (2023)',
+    },
+  },
+  {
+    id: 'ACT-007',
+    section: 'today',
+    titleKey: 'catalog.today.wash_face_rinse_eyes.title',
+    bodyKey: 'catalog.today.wash_face_rinse_eyes.body',
+    applicableIf: { minBandOrdinal: 3 },
+    cost: 'free',
+    effort: 1,
+    risks: [],
+    impact: {
+      benefitType: 'personal_exposure',
+      metric: 'ocular_surface_particulate',
+      effectFraction: { low: 0.5, high: 0.8 },
+      basis:
+        'Saline or water rinse removes mechanically deposited particulates from eye conjunctiva and mucosal surfaces.',
+      confidence: 'medium',
+      sourceNote: 'Ophthalmology Air Quality Clinical Guidelines (2021)',
+    },
+  },
+  {
+    id: 'ACT-008',
+    section: 'today',
+    titleKey: 'catalog.today.track_hourly_trends.title',
+    bodyKey: 'catalog.today.track_hourly_trends.body',
+    applicableIf: { minBandOrdinal: 1 },
+    cost: 'free',
+    effort: 1,
+    risks: [],
+    impact: {
+      benefitType: 'personal_exposure',
+      metric: 'pm25_inhalation',
+      effectFraction: { low: 0.1, high: 0.25 },
+      basis:
+        'Adaptive scheduling based on real-time sensor trends reduces personal cumulative exposure by avoiding spikes.',
+      confidence: 'medium',
+      sourceNote: 'Ngo et al., Environmental Health Perspectives (2021)',
+    },
+  },
+  {
+    id: 'ACT-009',
+    section: 'today',
+    titleKey: 'catalog.today.senior_protection.title',
+    bodyKey: 'catalog.today.senior_protection.body',
+    applicableIf: {
+      minBandOrdinal: 3,
+      requiredSensitivities: ['heart', 'copd', 'asthma'],
+    },
+    cost: 'free',
+    effort: 1,
+    risks: [],
+    impact: {
+      benefitType: 'personal_exposure',
+      metric: 'cardiorespiratory_events',
+      effectFraction: { low: 0.2, high: 0.4 },
+      basis:
+        'Seniors with cardiopulmonary conditions experience elevated risk of arrhythmia and acute exacerbation on high PM2.5 days.',
+      confidence: 'high',
+      sourceNote: 'American Heart Association Scientific Statement on Air Pollution (2020)',
+    },
+  },
+  {
+    id: 'ACT-010',
+    section: 'today',
+    titleKey: 'catalog.today.cancel_outdoor_events.title',
+    bodyKey: 'catalog.today.cancel_outdoor_events.body',
+    applicableIf: { minBandOrdinal: 4 },
+    cost: 'free',
+    effort: 2,
+    risks: ['Event rescheduling friction'],
+    impact: {
+      benefitType: 'personal_exposure',
+      metric: 'pm25_inhalation',
+      effectFraction: { low: 0.4, high: 0.7 },
+      basis:
+        'Prolonged outdoor exposure during hazardous air events multiplies cumulative lung intake of fine particulate matter.',
+      confidence: 'high',
+      sourceNote: 'WHO Global Air Quality Guidelines (2021)',
+    },
+  },
+] as const;
