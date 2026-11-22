@@ -1,0 +1,35 @@
+{
+  "appName": "Clear Air Companion",
+  "tagline": "Personalized actions for winter smog protection",
+  "aqi": {
+    "title": "Air Quality Index",
+    "pm25": "PM2.5",
+    "unit": "µg/m³",
+    "updated": "Updated",
+    "source": "Open-Meteo",
+    "bands": {
+      "good": "Good",
+      "moderate": "Moderate",
+      "usg": "Unhealthy for Sensitive Groups",
+      "unhealthy": "Unhealthy",
+      "very_unhealthy": "Very Unhealthy",
+      "hazardous": "Hazardous",
+      "severe": "Severe Smog"
+    }
+  },
+  "routine": {
+    "morning": "Morning (6 AM - 12 PM)",
+    "daytime": "Afternoon (12 PM - 6 PM)",
+    "evening": "Evening (6 PM - 10 PM)",
+    "night": "Night (10 PM - 6 AM)"
+  },
+  "impact": {
+    "personal": "Personal Exposure",
+    "emissions": "Community Emissions",
+    "both": "Personal & Community Benefit",
+    "highConfidence": "High confidence (peer-reviewed / EPA standard)",
+    "medConfidence": "Medium confidence (modeling / field tests)",
+    "lowConfidence": "Low confidence (observational estimate)"
+  },
+  "disclaimer": "Informational only. Not medical advice. For severe symptoms, contact emergency medical care immediately."
+}

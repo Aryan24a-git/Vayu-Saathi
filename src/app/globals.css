@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-good: #15803d;
+  --color-moderate: #a16207;
+  --color-usg: #c2410c;
+  --color-unhealthy: #b91c1c;
+  --color-very-unhealthy: #7e22ce;
+  --color-hazardous: #701a75;
+  --color-severe: #4c0519;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 font-sans antialiased min-h-screen flex flex-col;
+}
+
+/* Accessible focus outline */
+*:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
