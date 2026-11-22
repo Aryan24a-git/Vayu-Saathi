@@ -22,3 +22,4 @@ The catalog currently contains 28 validated actions across 4 core categories:
 
 ## 4. Build-Time Guard
 The catalog is strictly guarded by `src/catalog/catalog.schema.ts` and validated via `src/catalog/validate-catalog.ts`. Any missing citation or malformed impact block fails the build.
+

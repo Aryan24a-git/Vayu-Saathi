@@ -1,0 +1,50 @@
+// Satisfies: NFR-003, SEC-002, DEP-003, EC-001
+// Server configuration with strict Zod validation and fail-fast behavior.
+// LLM keys are completely optional (enabling deterministic fallback).
+
+import { z } from 'zod';
+
+export const EnvSchema = z.object({
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
+  APP_ORIGIN: z.string().default('http://localhost:3000'),
+
+  AQ_PROVIDER: z.string().default('open-meteo'),
+
+  RATE_LIMIT_PLAN: z.coerce.number().int().positive().default(10),
+  RATE_LIMIT_AQI: z.coerce.number().int().positive().default(60),
+  RATE_LIMIT_GEOCODE: z.coerce.number().int().positive().default(30),
+
+  // Optional LLM configuration
+  ANTHROPIC_API_KEY: z.string().min(1).optional(),
+  GEMINI_API_KEY: z.string().min(1).optional(),
+  LLM_MODEL: z.string().default('claude-3-5-haiku-20241022'),
+  LLM_ENABLED: z
+    .string()
+    .transform((val) => val === 'true' || val === '1')
+    .or(z.boolean())
+    .default(true),
+  LLM_DAILY_CALL_CAP: z.coerce.number().int().positive().default(1000),
+});
+
+export type Env = z.infer<typeof EnvSchema>;
+
+let cachedEnv: Env | null = null;
+
+export function validateEnv(raw: Record<string, string | undefined>): Env {
+  const result = EnvSchema.safeParse(raw);
+  if (!result.success) {
+    const formatted = result.error.issues
+      .map((issue) => `  - ${issue.path.join('.')}: ${issue.message}`)
+      .join('\n');
+    throw new Error(`Environment validation failed:\n${formatted}`);
+  }
+  return result.data;
+}
+
+export function getEnv(): Env {
+  if (!cachedEnv) {
+    cachedEnv = validateEnv(process.env);
+  }
+  return cachedEnv;
+}
