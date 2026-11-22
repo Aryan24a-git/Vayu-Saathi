@@ -2,7 +2,15 @@
 'use client';
 
 import React, { useState } from 'react';
-import { AlertCircle, Clock, ShieldCheck, Share2, Printer, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  AlertCircle,
+  Clock,
+  ShieldCheck,
+  Share2,
+  Printer,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
 import type { GeneratedPlan } from '@/lib/ai/planner';
 import type { Action } from '@/catalog/catalog.schema';
 
@@ -37,11 +45,14 @@ function ActionItem({ action }: { action: Action }) {
       {open && (
         <div className="pt-2 border-t border-slate-100 text-xs bg-slate-50 -mx-3 -mb-3 p-3 rounded-b-lg space-y-1">
           <p className="font-semibold text-slate-800">
-            Impact: {imp.magnitudeRange.low}–{imp.magnitudeRange.high} {imp.magnitudeRange.unit} ({imp.benefitType.replace('_', ' ')})
+            Impact: {imp.magnitudeRange.low}–{imp.magnitudeRange.high} {imp.magnitudeRange.unit} (
+            {imp.benefitType.replace('_', ' ')})
           </p>
           <p className="text-slate-600">{imp.magnitudeDescription}</p>
           <p className="text-[11px] text-slate-500 italic">Basis: {imp.basis}</p>
-          <p className="text-[10px] text-slate-400">Source: {imp.sourceNote} · Confidence: {imp.confidence}</p>
+          <p className="text-[10px] text-slate-400">
+            Source: {imp.sourceNote} · Confidence: {imp.confidence}
+          </p>
         </div>
       )}
     </article>
@@ -52,7 +63,8 @@ export function PlanCard({ plan }: PlanCardProps) {
   const [copied, setCopied] = useState(false);
 
   const handleShare = () => {
-    const text = `Clear Air Plan (${plan.effectiveBandLabel}):\n` +
+    const text =
+      `Clear Air Plan (${plan.effectiveBandLabel}):\n` +
       plan.actions.map((a, i) => `${i + 1}. ${a.title}`).join('\n');
     navigator.clipboard?.writeText(text);
     setCopied(true);
@@ -66,7 +78,9 @@ export function PlanCard({ plan }: PlanCardProps) {
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
           <div>
-            <h2 id="plan-heading" className="text-lg font-bold text-slate-900">Your Action Plan</h2>
+            <h2 id="plan-heading" className="text-lg font-bold text-slate-900">
+              Your Action Plan
+            </h2>
             <p className="text-xs text-slate-500">{plan.effectiveBandLabel} Protection Plan</p>
           </div>
           <div className="flex gap-2">
@@ -86,12 +100,16 @@ export function PlanCard({ plan }: PlanCardProps) {
         </div>
 
         {plan.hasRedFlag && (
-          <div role="alert" className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2.5">
+          <div
+            role="alert"
+            className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2.5"
+          >
             <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
             <div>
               <h3 className="text-xs font-bold text-red-900 uppercase">Emergency Health Warning</h3>
               <p className="text-xs text-red-700 mt-0.5">
-                Severe pollution level detected. If any member develops chest pain or acute breathlessness, seek immediate emergency medical care.
+                Severe pollution level detected. If any member develops chest pain or acute
+                breathlessness, seek immediate emergency medical care.
               </p>
             </div>
           </div>

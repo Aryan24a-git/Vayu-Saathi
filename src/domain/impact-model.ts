@@ -58,8 +58,8 @@ export function formatImpactForDisplay(impact: Impact): ImpactDisplay {
     confidence === 'low'
       ? 'This is an estimate with significant uncertainty. Treat as a rough guide.'
       : confidence === 'medium'
-      ? 'This is based on observational evidence. Individual results may vary.'
-      : 'This is based on controlled study evidence.';
+        ? 'This is based on observational evidence. Individual results may vary.'
+        : 'This is based on controlled study evidence.';
 
   return {
     rangeText,

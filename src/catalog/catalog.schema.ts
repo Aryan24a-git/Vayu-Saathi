@@ -13,11 +13,7 @@ export const MagnitudeRangeSchema = z.object({
 
 export const ConfidenceSchema = z.enum(['high', 'medium', 'low']);
 
-export const BenefitTypeSchema = z.enum([
-  'personal_exposure',
-  'emissions',
-  'both',
-]);
+export const BenefitTypeSchema = z.enum(['personal_exposure', 'emissions', 'both']);
 
 export const ImpactSchema = z.object({
   magnitudeRange: MagnitudeRangeSchema,
@@ -38,28 +34,12 @@ export const ActionSchema = z.object({
   budgetTier: z.enum(['free', 'low', 'medium', 'high']),
   minimumEscalationLevel: z.number().int().min(0).max(6),
   maximumEscalationLevel: z.number().int().min(0).max(6),
-  targetHousingTypes: z.array(
-    z.enum(['well_sealed', 'average', 'poorly_sealed', 'open'])
-  ),
+  targetHousingTypes: z.array(z.enum(['well_sealed', 'average', 'poorly_sealed', 'open'])),
   targetVulnerabilityFlags: z.array(
-    z.enum([
-      'asthma',
-      'heart_disease',
-      'lung_disease',
-      'elderly',
-      'infant',
-      'pregnant',
-    ])
+    z.enum(['asthma', 'heart_disease', 'lung_disease', 'elderly', 'infant', 'pregnant'])
   ),
   requiredVulnerabilityFlags: z.array(
-    z.enum([
-      'asthma',
-      'heart_disease',
-      'lung_disease',
-      'elderly',
-      'infant',
-      'pregnant',
-    ])
+    z.enum(['asthma', 'heart_disease', 'lung_disease', 'elderly', 'infant', 'pregnant'])
   ),
   cookingFuelRelevance: z.array(
     z.enum(['lpg', 'natural_gas', 'kerosene', 'biomass', 'electric', 'induction'])

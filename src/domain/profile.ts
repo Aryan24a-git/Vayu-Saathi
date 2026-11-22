@@ -8,12 +8,7 @@ import { z } from 'zod';
 export const BudgetBandSchema = z.enum(['none', 'low', 'medium', 'high']);
 export type BudgetBand = z.infer<typeof BudgetBandSchema>;
 
-export const HousingTypeSchema = z.enum([
-  'well_sealed',
-  'average',
-  'poorly_sealed',
-  'open',
-]);
+export const HousingTypeSchema = z.enum(['well_sealed', 'average', 'poorly_sealed', 'open']);
 export type HousingType = z.infer<typeof HousingTypeSchema>;
 
 export const CookingFuelSchema = z.enum([
@@ -64,11 +59,11 @@ export type VulnerabilityFlag = z.infer<typeof VulnerabilityFlagSchema>;
 // ─── Household Member ─────────────────────────────────────────────────────────
 
 export const AgeBandSchema = z.enum([
-  'infant',      // 0–2
-  'child',       // 3–12
-  'teen',        // 13–17
-  'adult',       // 18–64
-  'elderly',     // 65+
+  'infant', // 0–2
+  'child', // 3–12
+  'teen', // 13–17
+  'adult', // 18–64
+  'elderly', // 65+
 ]);
 export type AgeBand = z.infer<typeof AgeBandSchema>;
 

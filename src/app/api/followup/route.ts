@@ -3,11 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import {
-  containsPromptInjection,
-  isAirQualityRelated,
-  sanitizeInput,
-} from '@/lib/ai/guardrails';
+import { containsPromptInjection, isAirQualityRelated, sanitizeInput } from '@/lib/ai/guardrails';
 import { generateContent } from '@/lib/ai/client';
 import { RateLimiter, getClientIp } from '@/lib/rate-limit';
 
@@ -24,10 +20,7 @@ export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
   const rate = followupLimiter.check(ip);
   if (!rate.allowed) {
-    return NextResponse.json(
-      { error: 'Rate limit exceeded' },
-      { status: 429 }
-    );
+    return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
   }
 
   let body: unknown;
@@ -52,7 +45,10 @@ export async function POST(req: NextRequest) {
 
   if (!isAirQualityRelated(rawQ)) {
     return NextResponse.json(
-      { answer: 'This assistant only answers questions regarding winter smog, air pollution, and indoor air safety.' },
+      {
+        answer:
+          'This assistant only answers questions regarding winter smog, air pollution, and indoor air safety.',
+      },
       { status: 200 }
     );
   }

@@ -2,7 +2,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import type { Profile, VulnerabilityFlag, BudgetBand, HousingType, CookingFuel } from '@/domain/profile';
+import type {
+  Profile,
+  VulnerabilityFlag,
+  BudgetBand,
+  HousingType,
+  CookingFuel,
+} from '@/domain/profile';
 import { PROFILE_SCHEMA_VERSION } from '@/domain/profile';
 
 interface ProfileWizardProps {
@@ -20,9 +26,7 @@ export function ProfileWizard({ initialProfile, onSave }: ProfileWizardProps) {
   );
 
   const toggleFlag = (flag: VulnerabilityFlag) => {
-    setFlags((prev) =>
-      prev.includes(flag) ? prev.filter((f) => f !== flag) : [...prev, flag]
-    );
+    setFlags((prev) => (prev.includes(flag) ? prev.filter((f) => f !== flag) : [...prev, flag]));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -47,10 +51,15 @@ export function ProfileWizard({ initialProfile, onSave }: ProfileWizardProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-6">
+    <form
+      onSubmit={handleSubmit}
+      className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-6"
+    >
       <div>
         <h2 className="text-base font-bold text-slate-900">Household Profile</h2>
-        <p className="text-xs text-slate-500">Stored only on your device. Tailors your daily routine and budget.</p>
+        <p className="text-xs text-slate-500">
+          Stored only on your device. Tailors your daily routine and budget.
+        </p>
       </div>
 
       <fieldset className="space-y-2">
@@ -58,8 +67,20 @@ export function ProfileWizard({ initialProfile, onSave }: ProfileWizardProps) {
           Vulnerabilities in Household
         </legend>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {(['asthma', 'heart_disease', 'lung_disease', 'elderly', 'infant', 'pregnant'] as VulnerabilityFlag[]).map((f) => (
-            <label key={f} className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 text-xs cursor-pointer hover:bg-slate-50">
+          {(
+            [
+              'asthma',
+              'heart_disease',
+              'lung_disease',
+              'elderly',
+              'infant',
+              'pregnant',
+            ] as VulnerabilityFlag[]
+          ).map((f) => (
+            <label
+              key={f}
+              className="flex items-center gap-2 p-2 rounded-lg border border-slate-200 text-xs cursor-pointer hover:bg-slate-50"
+            >
               <input
                 type="checkbox"
                 checked={flags.includes(f)}
@@ -74,7 +95,10 @@ export function ProfileWizard({ initialProfile, onSave }: ProfileWizardProps) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="housing-select" className="block text-xs font-semibold uppercase text-slate-600 mb-1">
+          <label
+            htmlFor="housing-select"
+            className="block text-xs font-semibold uppercase text-slate-600 mb-1"
+          >
             Housing Sealing
           </label>
           <select
@@ -91,7 +115,10 @@ export function ProfileWizard({ initialProfile, onSave }: ProfileWizardProps) {
         </div>
 
         <div>
-          <label htmlFor="cooking-select" className="block text-xs font-semibold uppercase text-slate-600 mb-1">
+          <label
+            htmlFor="cooking-select"
+            className="block text-xs font-semibold uppercase text-slate-600 mb-1"
+          >
             Cooking Fuel
           </label>
           <select
@@ -108,7 +135,10 @@ export function ProfileWizard({ initialProfile, onSave }: ProfileWizardProps) {
         </div>
 
         <div>
-          <label htmlFor="budget-select" className="block text-xs font-semibold uppercase text-slate-600 mb-1">
+          <label
+            htmlFor="budget-select"
+            className="block text-xs font-semibold uppercase text-slate-600 mb-1"
+          >
             Budget for Air Quality
           </label>
           <select

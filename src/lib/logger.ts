@@ -11,9 +11,23 @@ const LEVEL_ORDER: Record<LogLevel, number> = {
 };
 
 const REDACTED_FIELDS = new Set([
-  'lat', 'lon', 'latitude', 'longitude', 'coordinates', 'coord',
-  'query', 'freeText', 'question', 'userInput', 'followUp',
-  'apiKey', 'key', 'token', 'secret', 'password', 'authorization',
+  'lat',
+  'lon',
+  'latitude',
+  'longitude',
+  'coordinates',
+  'coord',
+  'query',
+  'freeText',
+  'question',
+  'userInput',
+  'followUp',
+  'apiKey',
+  'key',
+  'token',
+  'secret',
+  'password',
+  'authorization',
 ]);
 
 function redact(obj: unknown, depth = 0): unknown {

@@ -35,12 +35,19 @@ export function FollowUpChat() {
   };
 
   return (
-    <section aria-labelledby="chat-heading" className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 space-y-4">
+    <section
+      aria-labelledby="chat-heading"
+      className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 space-y-4"
+    >
       <div className="flex items-center gap-2">
         <MessageSquare className="w-5 h-5 text-blue-600" aria-hidden="true" />
         <div>
-          <h2 id="chat-heading" className="text-base font-bold text-slate-900">Ask Clear Air Companion</h2>
-          <p className="text-xs text-slate-500">Ask questions about smog precautions, masks, ventilation, or your plan.</p>
+          <h2 id="chat-heading" className="text-base font-bold text-slate-900">
+            Ask Clear Air Companion
+          </h2>
+          <p className="text-xs text-slate-500">
+            Ask questions about smog precautions, masks, ventilation, or your plan.
+          </p>
         </div>
       </div>
 
@@ -56,7 +63,9 @@ export function FollowUpChat() {
       </div>
 
       <form onSubmit={handleSubmit} className="flex gap-2">
-        <label htmlFor="followup-input" className="sr-only">Ask a question</label>
+        <label htmlFor="followup-input" className="sr-only">
+          Ask a question
+        </label>
         <input
           id="followup-input"
           type="text"
@@ -70,7 +79,11 @@ export function FollowUpChat() {
           disabled={loading || !question.trim()}
           className="px-3 py-2 bg-blue-600 disabled:opacity-50 text-white rounded-lg hover:bg-blue-700 text-xs flex items-center gap-1"
         >
-          {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+          {loading ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <Send className="w-3.5 h-3.5" />
+          )}
           <span>Ask</span>
         </button>
       </form>

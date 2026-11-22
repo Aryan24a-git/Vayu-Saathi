@@ -40,9 +40,7 @@ describe('AQI Bands Domain', () => {
     expect(baseEscalation).toBe(2);
 
     // With asthma + infant (2 flags -> +2 escalation level, capped at 6)
-    profile.members = [
-      { ageBand: 'infant', vulnerabilityFlags: ['asthma'] },
-    ];
+    profile.members = [{ ageBand: 'infant', vulnerabilityFlags: ['asthma'] }];
     const adjusted = computeEffectiveEscalationLevel(band, profile);
     expect(adjusted).toBe(4);
   });

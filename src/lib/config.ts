@@ -45,9 +45,7 @@ export function getConfig(): AppConfig {
 
   const result = envSchema.safeParse(process.env);
   if (!result.success) {
-    const issues = result.error.issues
-      .map((i) => `  ${i.path.join('.')}: ${i.message}`)
-      .join('\n');
+    const issues = result.error.issues.map((i) => `  ${i.path.join('.')}: ${i.message}`).join('\n');
     throw new Error(`Environment validation failed:\n${issues}`);
   }
 

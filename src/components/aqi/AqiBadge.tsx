@@ -30,10 +30,16 @@ export function AqiBadge({ reading, onManualAqiChange, onCitySearch }: AqiBadgeP
   };
 
   return (
-    <section aria-labelledby="aqi-heading" className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+    <section
+      aria-labelledby="aqi-heading"
+      className="bg-white rounded-xl shadow-sm border border-slate-200 p-5"
+    >
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 id="aqi-heading" className="text-sm font-semibold uppercase tracking-wider text-slate-500">
+          <h2
+            id="aqi-heading"
+            className="text-sm font-semibold uppercase tracking-wider text-slate-500"
+          >
             Current Air Quality
           </h2>
           <div className="flex items-center gap-3 mt-1">
@@ -44,13 +50,16 @@ export function AqiBadge({ reading, onManualAqiChange, onCitySearch }: AqiBadgeP
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            PM2.5: <strong className="text-slate-700">{reading.pm25} µg/m³</strong> · Source: {reading.source}
+            PM2.5: <strong className="text-slate-700">{reading.pm25} µg/m³</strong> · Source:{' '}
+            {reading.source}
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <form onSubmit={handleCitySubmit} className="flex items-center gap-1">
-            <label htmlFor="city-search" className="sr-only">Search City</label>
+            <label htmlFor="city-search" className="sr-only">
+              Search City
+            </label>
             <input
               id="city-search"
               type="text"
@@ -78,7 +87,9 @@ export function AqiBadge({ reading, onManualAqiChange, onCitySearch }: AqiBadgeP
 
       {showManual && (
         <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-3">
-          <label htmlFor="manual-aqi" className="text-xs font-medium text-slate-700">Override AQI:</label>
+          <label htmlFor="manual-aqi" className="text-xs font-medium text-slate-700">
+            Override AQI:
+          </label>
           <input
             id="manual-aqi"
             type="number"

@@ -19,10 +19,7 @@ export async function GET(req: NextRequest) {
   const ip = getClientIp(req);
   const rate = geocodeLimiter.check(ip);
   if (!rate.allowed) {
-    return NextResponse.json(
-      { error: 'Rate limit exceeded' },
-      { status: 429 }
-    );
+    return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
   }
 
   const { searchParams } = new URL(req.url);

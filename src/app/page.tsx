@@ -59,7 +59,9 @@ export default function HomePage() {
       }
     };
     fetchPlan();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [profile, reading.aqi]);
 
   const handleProfileSave = (newProfile: Profile) => {
@@ -117,7 +119,10 @@ export default function HomePage() {
 
           <div className="md:col-span-2 space-y-6">
             {loading && !plan ? (
-              <div aria-live="polite" className="bg-white rounded-xl border border-slate-200 p-8 text-center text-xs text-slate-500">
+              <div
+                aria-live="polite"
+                className="bg-white rounded-xl border border-slate-200 p-8 text-center text-xs text-slate-500"
+              >
                 Building your tailored action plan...
               </div>
             ) : plan ? (

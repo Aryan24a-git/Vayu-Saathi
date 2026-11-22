@@ -33,10 +33,7 @@ export async function GET(req: NextRequest) {
   });
 
   if (!parsed.success) {
-    return NextResponse.json(
-      { error: 'Invalid coordinates provided' },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: 'Invalid coordinates provided' }, { status: 400 });
   }
 
   const reading = await fetchCurrentAqi(parsed.data.lat, parsed.data.lon);

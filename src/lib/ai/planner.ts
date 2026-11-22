@@ -66,9 +66,7 @@ export async function generatePersonalizedPlan(
       const parsed = PlanOutputSchema.safeParse(JSON.parse(rawAi));
       if (parsed.success) {
         // Enforce grounding: verify all selected IDs are strictly in allowed candidate IDs
-        const validIds = parsed.data.selectedActionIds.filter((id) =>
-          candidateIds.includes(id)
-        );
+        const validIds = parsed.data.selectedActionIds.filter((id) => candidateIds.includes(id));
         if (validIds.length > 0) {
           narrative = parsed.data.narrative;
           keyAdvice = parsed.data.keyAdvice;

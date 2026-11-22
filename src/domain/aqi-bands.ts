@@ -7,13 +7,7 @@ import { hasEarlyEscalationVulnerability, countVulnerabilityFlags } from './prof
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type AqiBandId =
-  | 'good'
-  | 'moderate'
-  | 'usg'
-  | 'unhealthy'
-  | 'very_unhealthy'
-  | 'hazardous'
-  | 'severe';
+  'good' | 'moderate' | 'usg' | 'unhealthy' | 'very_unhealthy' | 'hazardous' | 'severe';
 
 export interface AqiBand {
   id: AqiBandId;
@@ -143,10 +137,7 @@ export function classifyPm25(pm25: number): AqiBand {
  * Compute effective escalation level for a profile + AQI reading.
  * Vulnerable households get escalation applied earlier (D1).
  */
-export function computeEffectiveEscalationLevel(
-  baseBand: AqiBand,
-  profile: Profile
-): number {
+export function computeEffectiveEscalationLevel(baseBand: AqiBand, profile: Profile): number {
   if (!hasEarlyEscalationVulnerability(profile)) {
     return baseBand.escalationLevel;
   }

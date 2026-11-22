@@ -33,18 +33,28 @@ export function CommunityCalculator() {
     : null;
 
   return (
-    <section aria-labelledby="community-calc-heading" className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 space-y-4">
+    <section
+      aria-labelledby="community-calc-heading"
+      className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 space-y-4"
+    >
       <div className="flex items-center gap-2">
         <Users2 className="w-5 h-5 text-indigo-600" aria-hidden="true" />
         <div>
-          <h2 id="community-calc-heading" className="text-base font-bold text-slate-900">Community &quot;What-If&quot; Calculator</h2>
-          <p className="text-xs text-slate-500">Model the collective effect if your apartment block or colony acts together.</p>
+          <h2 id="community-calc-heading" className="text-base font-bold text-slate-900">
+            Community &quot;What-If&quot; Calculator
+          </h2>
+          <p className="text-xs text-slate-500">
+            Model the collective effect if your apartment block or colony acts together.
+          </p>
         </div>
       </div>
 
       <form onSubmit={handleCalculate} className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label htmlFor="action-select" className="block text-xs font-semibold text-slate-600 mb-1">
+          <label
+            htmlFor="action-select"
+            className="block text-xs font-semibold text-slate-600 mb-1"
+          >
             Community Action
           </label>
           <select
@@ -62,7 +72,10 @@ export function CommunityCalculator() {
         </div>
 
         <div>
-          <label htmlFor="household-input" className="block text-xs font-semibold text-slate-600 mb-1">
+          <label
+            htmlFor="household-input"
+            className="block text-xs font-semibold text-slate-600 mb-1"
+          >
             Number of Households
           </label>
           <input
@@ -81,7 +94,11 @@ export function CommunityCalculator() {
         </div>
       </form>
 
-      {error && <p role="alert" className="text-xs text-red-600">{error}</p>}
+      {error && (
+        <p role="alert" className="text-xs text-red-600">
+          {error}
+        </p>
+      )}
 
       {result && (
         <div className="bg-indigo-50/60 border border-indigo-100 rounded-lg p-3 space-y-2">
@@ -92,11 +109,18 @@ export function CommunityCalculator() {
           <div className="flex gap-4 pt-1 text-xs">
             <div>
               <span className="text-[10px] uppercase text-indigo-700 block">Active Households</span>
-              <strong>{result.estimatedParticipants.low} - {result.estimatedParticipants.high}</strong>
+              <strong>
+                {result.estimatedParticipants.low} - {result.estimatedParticipants.high}
+              </strong>
             </div>
             <div>
-              <span className="text-[10px] uppercase text-indigo-700 block">Total Benefit Range</span>
-              <strong>{result.projectedEffect.low} - {result.projectedEffect.high} {result.projectedEffect.unit}</strong>
+              <span className="text-[10px] uppercase text-indigo-700 block">
+                Total Benefit Range
+              </span>
+              <strong>
+                {result.projectedEffect.low} - {result.projectedEffect.high}{' '}
+                {result.projectedEffect.unit}
+              </strong>
             </div>
           </div>
           <p className="text-[10px] text-indigo-700/80 italic pt-1">{result.caveat}</p>

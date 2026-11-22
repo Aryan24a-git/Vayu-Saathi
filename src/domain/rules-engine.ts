@@ -122,9 +122,7 @@ export function assemblePlan(
 
     // Required vulnerability flags: only show if profile has them
     if (action.requiredVulnerabilityFlags.length > 0) {
-      const hasRequired = action.requiredVulnerabilityFlags.every((f) =>
-        profileFlags.has(f)
-      );
+      const hasRequired = action.requiredVulnerabilityFlags.every((f) => profileFlags.has(f));
       if (!hasRequired) return false;
     }
 
@@ -143,10 +141,7 @@ export function assemblePlan(
   const redFlags = scored.filter((s) => s.action.redFlagTrigger);
   const regular = scored.filter((s) => !s.action.redFlagTrigger);
 
-  const selected = [
-    ...redFlags,
-    ...regular.slice(0, MAX_ACTIONS_PER_PLAN - redFlags.length),
-  ];
+  const selected = [...redFlags, ...regular.slice(0, MAX_ACTIONS_PER_PLAN - redFlags.length)];
 
   const candidateActions: PlanAction[] = selected.map((s, index) => ({
     actionId: s.action.id,
