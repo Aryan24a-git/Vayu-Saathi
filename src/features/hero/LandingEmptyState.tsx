@@ -57,8 +57,8 @@ export function LandingEmptyState({
           Check live winter air quality for your city
         </h2>
         <p className="text-sm text-slate-600">
-          Search any Indian city to fetch live Open-Meteo air quality &amp; 24-hour dispersion data,
-          or use your approximate location.
+          Search any Indian city to fetch live WAQI station air quality &amp; 24-hour dispersion
+          data, or use your approximate location.
         </p>
       </div>
 

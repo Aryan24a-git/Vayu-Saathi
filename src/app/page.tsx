@@ -37,7 +37,7 @@ function VayuSaathiApp() {
           state.setAiPlaybook(null);
           showToast('Loaded live air quality for your approximate area.', 'success');
         } catch {
-          showToast('Live Open-Meteo service unavailable. Enter AQI manually.', 'warning');
+          showToast('Live air quality service unavailable. Enter AQI manually.', 'warning');
         }
       },
       () => showToast('Location permission denied. Search your city above.', 'info')

@@ -55,7 +55,7 @@ describe('/api/city-scenario Endpoint', () => {
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data.isSynthetic).toBe(false);
-    expect(data.subtitle).toContain('Model estimate (Open-Meteo)');
+    expect(data.subtitle).toMatch(/Model estimate \(Open-Meteo\)|Station reading \(WAQI\)/);
     expect(data.subtitle).toContain('2:30 pm');
     expect('basePledges' in data).toBe(false);
     expect('baseCo2Kg' in data).toBe(false);

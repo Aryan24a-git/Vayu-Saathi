@@ -13,7 +13,7 @@ export const EnvSchema = z.object({
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
   APP_ORIGIN: z.string().default('http://localhost:3000'),
 
-  AQ_PROVIDER: z.string().default('open-meteo'),
+  AQ_PROVIDER: z.string().default('waqi'),
   WAQI_API_TOKEN: z.string().min(1).optional(),
 
   RATE_LIMIT_PLAN: z.coerce.number().int().positive().default(RATE_LIMITS.planPerMinute),

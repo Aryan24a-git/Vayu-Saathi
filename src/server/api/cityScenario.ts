@@ -150,7 +150,7 @@ function buildWaqiScenario(
     city: waqi.stationName || `${city}, ${admin1 || 'India'}`,
     shortCity: city,
     subtitle: `Station reading (WAQI) · ${obsTime}`,
-    sourceLabel: hasHourly ? 'WAQI Station + Open-Meteo Hourly' : 'WAQI Station (aqicn.org)',
+    sourceLabel: 'Station observation (WAQI / Air Quality Open Data)',
     pm25: waqi.pm25,
     pm10: waqi.pm10,
     no2: waqi.no2 ?? Math.round(meteo?.aq.current.nitrogen_dioxide ?? 0),
@@ -169,13 +169,13 @@ async function resolveLiveScenario(
   lon: number
 ): Promise<LocationScenario | null> {
   const env = getEnv();
-  if (env.AQ_PROVIDER.toLowerCase() === 'waqi') {
-    if (!env.WAQI_API_TOKEN) return null;
+  const token = env.WAQI_API_TOKEN;
+  if (token && (env.AQ_PROVIDER.toLowerCase() === 'waqi' || !env.AQ_PROVIDER)) {
     const [waqi, meteo] = await Promise.all([
-      fetchWaqiStation(lat, lon, env.WAQI_API_TOKEN).catch(() => null),
+      fetchWaqiStation(lat, lon, token).catch(() => null),
       fetchLiveMeteo(lat, lon),
     ]);
-    return waqi ? buildWaqiScenario(name, admin1, waqi, meteo) : null;
+    if (waqi) return buildWaqiScenario(name, admin1, waqi, meteo);
   }
   const meteo = await fetchLiveMeteo(lat, lon);
   return meteo ? buildScenarioFromData(name, admin1, meteo) : null;
@@ -236,7 +236,7 @@ export async function handleCityScenario(req: NextRequest) {
       {
         code: 'PROVIDER_UNAVAILABLE',
         message:
-          'Live air quality provider temporarily unavailable. Please enter AQI manually or choose a Demo scenario.',
+          'Live air quality provider temporarily unavailable. Please retry or enter AQI manually.',
         requestId,
         timestamp: new Date().toISOString(),
       },
