@@ -6,6 +6,7 @@ export interface LlmRequest {
   prompt: string;
   maxTokens: number;
   timeoutMs: number;
+  jsonMode?: boolean;
 }
 
 export interface LlmClient {
@@ -14,14 +15,31 @@ export interface LlmClient {
 
 let modelNotFoundLogged = false;
 let modelUnavailable = false;
+let modelSucceeded = false;
+let cachedReadyProbe: { ok: boolean; checkedAt: number } | null = null;
 
 export function isLlmModelUnavailable(): boolean {
   return modelUnavailable;
 }
 
+export function recordLlmSuccess(): void {
+  modelSucceeded = true;
+  cachedReadyProbe = { ok: true, checkedAt: Date.now() };
+}
+
 export function resetLlmAvailabilityForTests(): void {
   modelNotFoundLogged = false;
   modelUnavailable = false;
+  modelSucceeded = false;
+  cachedReadyProbe = null;
+}
+
+export function stripMarkdownCodeFences(raw: string): string {
+  return raw
+    .trim()
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/\s*```$/i, '')
+    .trim();
 }
 
 export function handleGeminiModelError(status: number, model: string, bodyText = ''): boolean {
@@ -58,8 +76,10 @@ export class GeminiClient implements LlmClient {
       system_instruction: { parts: [{ text: request.system }] },
       contents: [{ role: 'user', parts: [{ text: request.prompt }] }],
       generationConfig: {
-        maxOutputTokens: Math.min(request.maxTokens, 700),
+        maxOutputTokens: Math.min(Math.max(request.maxTokens, 400), 1000),
         temperature: 0.2,
+        thinkingConfig: { thinkingBudget: 0 },
+        ...(request.jsonMode ? { responseMimeType: 'application/json' } : {}),
       },
     });
 
@@ -78,7 +98,9 @@ export class GeminiClient implements LlmClient {
           const data = (await res.json()) as {
             candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
           };
-          return data.candidates?.[0]?.content?.parts?.[0]?.text ?? null;
+          const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? null;
+          if (text) recordLlmSuccess();
+          return text;
         }
 
         const errText = await res.text().catch(() => '');
@@ -87,6 +109,9 @@ export class GeminiClient implements LlmClient {
         }
 
         const retryable = res.status === 429 || res.status >= 500;
+        if (res.status === 429) {
+          cachedReadyProbe = { ok: false, checkedAt: Date.now() };
+        }
         if (!retryable || attempt === 1) {
           logger.warn('llmRequestFailed', { fallbackReason: `HTTP_${res.status}` });
           return null;
@@ -112,4 +137,47 @@ export function createLlmClient(): LlmClient {
   const apiKey = env.GEMINI_API_KEY;
   if (!env.LLM_ENABLED || !apiKey || modelUnavailable) return new NullClient();
   return new GeminiClient(apiKey, env.GEMINI_MODEL);
+}
+
+export async function checkLlmReadiness(): Promise<boolean> {
+  const env = getEnv();
+  if (!env.LLM_ENABLED || !env.GEMINI_API_KEY || modelUnavailable) return false;
+  if (modelSucceeded) return true;
+  if (cachedReadyProbe && Date.now() - cachedProbeTime(cachedReadyProbe) < 300_000) {
+    return cachedReadyProbe.ok;
+  }
+
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
+      env.GEMINI_MODEL
+    )}:generateContent?key=${encodeURIComponent(env.GEMINI_API_KEY)}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [{ text: 'ok' }] }],
+        generationConfig: {
+          maxOutputTokens: 5,
+          temperature: 0,
+          thinkingConfig: { thinkingBudget: 0 },
+        },
+      }),
+      signal: AbortSignal.timeout(3000),
+    });
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      handleGeminiModelError(res.status, env.GEMINI_MODEL, body);
+      cachedReadyProbe = { ok: false, checkedAt: Date.now() };
+      return false;
+    }
+    recordLlmSuccess();
+    return true;
+  } catch {
+    cachedReadyProbe = { ok: false, checkedAt: Date.now() };
+    return false;
+  }
+}
+
+function cachedProbeTime(probe: { checkedAt: number }): number {
+  return probe.checkedAt;
 }

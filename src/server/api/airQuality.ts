@@ -1,6 +1,9 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { fetchOpenMeteoSnapshot } from '@/server/providers/openMeteoAirQuality';
+import { fetchWaqiStation } from '@/server/providers/waqiAirQuality';
+import { getEnv } from '@/server/config/env';
+import { findBandByPm25 } from '@/domain/bands';
 import { getRequestId, REQUEST_ID_HEADER } from '@/server/http/requestId';
 import {
   MemoryBucketStore,
@@ -44,6 +47,23 @@ export async function handleAirQuality(req: NextRequest) {
     );
   }
   try {
+    const env = getEnv();
+    if (env.AQ_PROVIDER.toLowerCase() === 'waqi' && env.WAQI_API_TOKEN) {
+      const station = await fetchWaqiStation(parsed.data.lat, parsed.data.lon, env.WAQI_API_TOKEN);
+      return securityJson(
+        {
+          aqi: station.aqi,
+          pm25: station.pm25,
+          timestamp: station.timeIso ?? new Date().toISOString(),
+          source: 'WAQI Station (aqicn.org)',
+          isFallback: false,
+          isStale: false,
+          band: findBandByPm25(station.pm25).key,
+        },
+        200,
+        { [REQUEST_ID_HEADER]: requestId }
+      );
+    }
     const snapshot = await fetchOpenMeteoSnapshot(parsed.data.lat, parsed.data.lon);
     return securityJson(
       {

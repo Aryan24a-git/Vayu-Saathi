@@ -57,7 +57,20 @@ describe('Gemini model-not-found fallback & /api/ready health', () => {
     expect(errorSpy).toHaveBeenCalledTimes(1);
 
     // /api/ready must now report llm: false
-    const readyRes = readyGet(new NextRequest('http://localhost/api/ready'));
+    const readyRes = await readyGet(new NextRequest('http://localhost/api/ready'));
+    expect(readyRes.status).toBe(200);
+    const body = (await readyRes.json()) as { status: string; llm: boolean };
+    expect(body.llm).toBe(false);
+  });
+
+  it('reports /api/ready llm: false when key exists but lightweight model probe fails', async () => {
+    vi.stubGlobal('fetch', async () => ({
+      ok: false,
+      status: 503,
+      text: async () => 'service unavailable',
+    }));
+
+    const readyRes = await readyGet(new NextRequest('http://localhost/api/ready'));
     expect(readyRes.status).toBe(200);
     const body = (await readyRes.json()) as { status: string; llm: boolean };
     expect(body.llm).toBe(false);

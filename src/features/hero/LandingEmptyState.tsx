@@ -3,7 +3,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { MapPin, Navigation, Edit3, AlertTriangle, RefreshCw, FlaskConical } from 'lucide-react';
+import { MapPin, Navigation, Edit3, AlertTriangle, RefreshCw } from 'lucide-react';
 
 const QUICK_CITIES = ['Delhi', 'Lucknow', 'Patna', 'Kolkata', 'Mumbai', 'Bengaluru', 'Jaipur'];
 
@@ -14,7 +14,6 @@ interface LandingEmptyStateProps {
   onFetchCity: (city: string) => Promise<void>;
   onUseGeolocation: () => Promise<void>;
   onManualPm25: (pm25: number) => void;
-  onSelectDemo: (key: string) => void;
 }
 
 export function LandingEmptyState({
@@ -24,11 +23,9 @@ export function LandingEmptyState({
   onFetchCity,
   onUseGeolocation,
   onManualPm25,
-  onSelectDemo,
 }: LandingEmptyStateProps) {
   const [query, setQuery] = useState('');
   const [showManual, setShowManual] = useState(false);
-  const [showDemo, setShowDemo] = useState(false);
   const [manualPm, setManualPm] = useState('180');
 
   if (isLoading) {
@@ -151,13 +148,6 @@ export function LandingEmptyState({
         >
           <Edit3 className="w-3.5 h-3.5" /> Enter AQI manually
         </button>
-        <button
-          type="button"
-          onClick={() => setShowDemo((v) => !v)}
-          className="inline-flex items-center gap-1.5 font-semibold text-slate-600 hover:text-slate-900"
-        >
-          <FlaskConical className="w-3.5 h-3.5" /> Try a demo scenario
-        </button>
       </div>
 
       {showManual && (
@@ -188,22 +178,6 @@ export function LandingEmptyState({
             Apply Manual Reading
           </button>
         </form>
-      )}
-
-      {showDemo && (
-        <div className="flex flex-wrap items-center gap-2 bg-amber-50/70 p-3 rounded-xl border border-amber-200 text-xs">
-          <span className="font-semibold text-amber-900">Demo scenario (synthetic data):</span>
-          {(['demo:delhi', 'demo:patna', 'demo:kolkata', 'demo:bengaluru'] as const).map((id) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => onSelectDemo(id)}
-              className="px-2.5 py-1 rounded-lg bg-white border border-amber-300 font-semibold text-amber-900 hover:bg-amber-100"
-            >
-              {id.replace('demo:', '')}
-            </button>
-          ))}
-        </div>
       )}
     </section>
   );

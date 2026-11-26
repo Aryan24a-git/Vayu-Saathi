@@ -13,10 +13,9 @@ export interface LocationScenario {
   pm10: number;
   no2: number;
   wind: number;
-  basePledges: number;
-  baseCo2Kg: number;
   hourlyPM25: number[];
   hourlyWind: number[];
+  hourlyError?: string;
   isSynthetic?: boolean;
 }
 
@@ -55,8 +54,6 @@ export const SCENARIOS: Record<string, LocationScenario> = {
     pm10: 410,
     no2: 84,
     wind: 4,
-    basePledges: 0,
-    baseCo2Kg: 0,
     hourlyPM25: [
       315, 328, 332, 330, 322, 310, 302, 292, 285, 255, 215, 180, 152, 138, 134, 142, 165, 205, 248,
       288, 318, 334, 340, 330,
@@ -77,8 +74,6 @@ export const SCENARIOS: Record<string, LocationScenario> = {
     pm10: 295,
     no2: 56,
     wind: 6,
-    basePledges: 0,
-    baseCo2Kg: 0,
     hourlyPM25: [
       218, 225, 230, 226, 220, 210, 204, 196, 192, 172, 146, 124, 106, 96, 94, 102, 122, 150, 178,
       202, 220, 232, 228, 222,
@@ -99,8 +94,6 @@ export const SCENARIOS: Record<string, LocationScenario> = {
     pm10: 198,
     no2: 62,
     wind: 7,
-    basePledges: 0,
-    baseCo2Kg: 0,
     hourlyPM25: [
       138, 142, 145, 140, 136, 130, 126, 120, 118, 104, 88, 76, 68, 62, 64, 70, 82, 98, 116, 132,
       144, 148, 145, 140,
@@ -121,8 +114,6 @@ export const SCENARIOS: Record<string, LocationScenario> = {
     pm10: 112,
     no2: 48,
     wind: 12,
-    basePledges: 0,
-    baseCo2Kg: 0,
     hourlyPM25: [
       62, 60, 58, 56, 55, 58, 62, 66, 68, 64, 54, 46, 42, 38, 39, 42, 48, 58, 68, 74, 72, 68, 65,
       63,

@@ -22,7 +22,7 @@ describe('/api/playbook Endpoint', () => {
     expect(data.playbook).toBeDefined();
     expect(data.playbook.iaqHacks).toHaveLength(3);
     expect(data.playbook.emissionSwaps).toHaveLength(3);
-    expect(data.source).toBe('Grounded VayuSaathi AI Engine');
+    expect(['ai', 'basic']).toContain(data.source);
   });
 
   it('rejects invalid payload with 400', async () => {

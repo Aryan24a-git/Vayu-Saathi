@@ -33,7 +33,7 @@ function VayuSaathiApp() {
         try {
           const loc = await fetchLiveByCoords(pos.coords.latitude, pos.coords.longitude);
           state.setLocation(loc);
-          state.setPlaybookSource('Smart Local Engine');
+          state.setPlaybookSource('basic');
           state.setAiPlaybook(null);
           showToast('Loaded live air quality for your approximate area.', 'success');
         } catch {
@@ -47,12 +47,12 @@ function VayuSaathiApp() {
   const handleManualPm25 = (pm25: number) => {
     state.setLocation(buildManualScenario(pm25));
     state.setAiPlaybook(null);
-    state.setPlaybookSource('Smart Local Engine');
+    state.setPlaybookSource('basic');
     showToast(`Applied manual PM2.5 reading (${pm25} µg/m³).`, 'info');
   };
 
   const handleGenerateAI = async () => {
-    if (!state.location || !state.vent || !state.impact) return;
+    if (!state.location || !state.impact) return;
     state.setIsGeneratingAI(true);
     try {
       const res = await fetch('/api/playbook', {
@@ -67,13 +67,19 @@ function VayuSaathiApp() {
       });
       if (res.ok) {
         const data = await res.json();
+        const src: 'ai' | 'basic' = data.source === 'ai' ? 'ai' : 'basic';
         state.setAiPlaybook(data.playbook);
-        state.setPlaybookSource(data.source || 'Grounded VayuSaathi AI Engine');
-        showToast('Fresh AI Playbook synthesized!', 'success');
+        state.setPlaybookSource(src);
+        showToast(
+          src === 'ai' ? 'Fresh AI Playbook synthesized!' : 'Generated playbook in Basic mode.',
+          src === 'ai' ? 'success' : 'info'
+        );
       } else {
+        state.setPlaybookSource('basic');
         showToast('Generated playbook from local rules engine.', 'info');
       }
     } catch {
+      state.setPlaybookSource('basic');
       showToast('Generated playbook from local rules engine.', 'info');
     } finally {
       state.setIsGeneratingAI(false);
@@ -81,7 +87,7 @@ function VayuSaathiApp() {
   };
 
   const handleSendMessage = async (text: string) => {
-    if (!state.location || !state.impact || !state.vent) return;
+    if (!state.location || !state.impact) return;
     state.setChatMessages((prev) => [...prev, { role: 'user', text }]);
     state.setIsChatLoading(true);
     try {
@@ -97,27 +103,35 @@ function VayuSaathiApp() {
       if (res.ok) {
         const data = await res.json();
         const fullAnswer = data.disclaimer ? `${data.answer}\n\n*${data.disclaimer}*` : data.answer;
-        state.setChatMessages((prev) => [...prev, { role: 'assistant', text: fullAnswer }]);
+        const src: 'ai' | 'basic' = data.source === 'ai' && !data.fallback ? 'ai' : 'basic';
+        state.setChatMessages((prev) => [
+          ...prev,
+          { role: 'assistant', text: fullAnswer, source: src },
+        ]);
       } else {
         const reply = getChatFallbackReply(text, state.location, state.impact, state.vent);
-        state.setChatMessages((prev) => [...prev, { role: 'assistant', text: reply }]);
+        state.setChatMessages((prev) => [
+          ...prev,
+          { role: 'assistant', text: reply, source: 'basic' },
+        ]);
       }
     } catch {
       const reply = getChatFallbackReply(text, state.location, state.impact, state.vent);
-      state.setChatMessages((prev) => [...prev, { role: 'assistant', text: reply }]);
+      state.setChatMessages((prev) => [
+        ...prev,
+        { role: 'assistant', text: reply, source: 'basic' },
+      ]);
     } finally {
       state.setIsChatLoading(false);
     }
   };
 
   const userCo2 = state.completedIds.length * 0.35;
-  const ready = state.location && state.impact && state.vent && state.playbook;
+  const ready = state.location && state.impact && state.playbook;
 
   return (
     <div className="font-sans antialiased overflow-x-hidden pb-24 md:pb-12 bg-[#F7F6F2] min-h-screen">
       <TopHeader
-        scenarioKey={state.scenarioKey}
-        onScenarioChange={state.handleScenarioChange}
         activeLocation={state.location}
         profile={state.profile}
         activeTab={state.activeTab}
@@ -151,11 +165,10 @@ function VayuSaathiApp() {
             onFetchCity={handleFetchLiveCity}
             onUseGeolocation={handleUseGeolocation}
             onManualPm25={handleManualPm25}
-            onSelectDemo={state.handleScenarioChange}
           />
         ) : (
           <>
-            <HeroSection location={state.location!} impact={state.impact!} vent={state.vent!} />
+            <HeroSection location={state.location!} impact={state.impact!} vent={state.vent} />
 
             {state.activeTab === 'playbook' && (
               <DailyPlaybookTab
@@ -173,7 +186,7 @@ function VayuSaathiApp() {
               <CopilotTab
                 location={state.location!}
                 profile={state.profile}
-                vent={state.vent!}
+                vent={state.vent}
                 messages={state.chatMessages}
                 onSendMessage={handleSendMessage}
                 onResetChat={() => state.initGreeting(state.location!)}
@@ -185,7 +198,7 @@ function VayuSaathiApp() {
               <CommunityTab
                 location={state.location!}
                 profile={state.profile}
-                vent={state.vent!}
+                vent={state.vent}
                 impact={state.impact!}
                 completedPledgesCount={state.completedIds.length}
                 userCo2Kg={userCo2}

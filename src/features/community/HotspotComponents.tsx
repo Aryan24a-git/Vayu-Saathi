@@ -105,11 +105,18 @@ export function HotspotCard({ item, isUpvoted, onToggleUpvote }: HotspotCardProp
     <article className="rounded-2xl border border-stone-200 bg-white p-4 flex flex-col justify-between gap-3 hover:border-stone-300 transition">
       <div>
         <div className="flex items-center justify-between gap-2 mb-2">
-          <span
-            className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${getCatStyle(item.category)}`}
-          >
-            {item.category}
-          </span>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span
+              className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${getCatStyle(item.category)}`}
+            >
+              {item.category}
+            </span>
+            {item.isSample && (
+              <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                Sample
+              </span>
+            )}
+          </div>
           <span className="text-[11px] text-slate-600 font-medium">{item.timeAgo}</span>
         </div>
         <h5 className="font-bold text-sm text-slate-900">{item.locality}</h5>

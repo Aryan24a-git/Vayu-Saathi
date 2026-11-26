@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { randomUUID } from 'crypto';
 import { RATE_LIMITS } from '../security/limits';
 
-export const DEFAULT_GEMINI_MODEL = 'gemini-3.8-flash';
+export const DEFAULT_GEMINI_MODEL = 'gemini-3-flash-preview';
 
 export const EnvSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
@@ -14,6 +14,7 @@ export const EnvSchema = z.object({
   APP_ORIGIN: z.string().default('http://localhost:3000'),
 
   AQ_PROVIDER: z.string().default('open-meteo'),
+  WAQI_API_TOKEN: z.string().min(1).optional(),
 
   RATE_LIMIT_PLAN: z.coerce.number().int().positive().default(RATE_LIMITS.planPerMinute),
   RATE_LIMIT_AQI: z.coerce.number().int().positive().default(RATE_LIMITS.airQualityPerMinute),

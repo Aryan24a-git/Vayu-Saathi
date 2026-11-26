@@ -1,14 +1,12 @@
 import { NextRequest } from 'next/server';
-import { getEnv } from '@/server/config/env';
-import { isLlmModelUnavailable } from '@/server/llm/client';
+import { checkLlmReadiness } from '@/server/llm/client';
 import { getRequestId } from '@/server/http/requestId';
 import { apiErrorResponse, securityJson } from '@/server/security/response';
 
-export function GET(req: NextRequest) {
+export async function GET(req: NextRequest) {
   const requestId = getRequestId(req);
   try {
-    const env = getEnv();
-    const llm = Boolean(env.LLM_ENABLED && env.GEMINI_API_KEY && !isLlmModelUnavailable());
+    const llm = await checkLlmReadiness();
     return securityJson({ status: 'ready', timestamp: new Date().toISOString(), llm }, 200);
   } catch {
     return apiErrorResponse(

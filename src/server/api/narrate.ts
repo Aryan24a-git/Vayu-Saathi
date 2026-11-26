@@ -65,7 +65,8 @@ export async function handlePlanNarrate(req: NextRequest) {
       narrative: result.narrative,
       isFallback: result.isFallback,
       fallbackReason: result.fallbackReason,
-      source: result.isFallback
+      source: result.isFallback ? ('basic' as const) : ('ai' as const),
+      sourceLabel: result.isFallback
         ? 'Deterministic Plan Copy (Basic Mode)'
         : 'Gemini Grounded Narration',
     },

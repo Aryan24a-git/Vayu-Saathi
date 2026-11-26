@@ -12,11 +12,14 @@ function generateNonce(): string {
 export function middleware(request: NextRequest): NextResponse {
   const nonce = generateNonce();
 
-  // Build CSP with nonce for scripts; style unsafe-inline accepted LOW finding
-  // (documented in SECURITY_AUDIT.md — React style props require it)
+  // Build CSP with nonce for scripts; allow unsafe-eval only in dev for Next/React HMR
+  const isDev = process.env.NODE_ENV !== 'production';
+  const scriptSrc = isDev
+    ? `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' 'unsafe-eval'`
+    : `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`;
   const csp = [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
+    scriptSrc,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob:",
     "font-src 'self'",

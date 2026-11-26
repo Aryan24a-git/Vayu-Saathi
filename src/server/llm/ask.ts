@@ -1,9 +1,9 @@
 import type { Profile } from '../../domain/profile';
 import type { BasicPlan } from '../../domain/plan';
-import { createLlmClient, type LlmClient } from './client';
+import { createLlmClient, stripMarkdownCodeFences, type LlmClient } from './client';
 import { classifyQuestionScope, containsInjection } from './guardrails';
 import { QUESTION_SYSTEM_PROMPT } from './prompts';
-import { AnswerSchema, type AnswerOutput } from './schema';
+import { AnswerSchema } from './schema';
 import { logger } from '../../lib/logger';
 
 const TEMPLATES = {
@@ -20,6 +20,7 @@ export interface AskResult {
   answer: string;
   disclaimer: string;
   fallback: boolean;
+  source: 'ai' | 'basic';
   fallbackReason?: string;
 }
 
@@ -46,12 +47,13 @@ export async function ask(
     prompt: `<user_data>${prompt}</user_data>`,
     maxTokens: 300,
     timeoutMs: 12_000,
+    jsonMode: true,
   });
   void profile;
   if (!raw) return template(scope);
   let parsed: unknown;
   try {
-    parsed = JSON.parse(raw);
+    parsed = JSON.parse(stripMarkdownCodeFences(raw));
   } catch {
     return template(scope);
   }
@@ -68,6 +70,7 @@ export async function ask(
     answer: result.data.answer,
     disclaimer: 'Informational only. Not medical advice.',
     fallback: false,
+    source: 'ai',
   };
 }
 
@@ -76,6 +79,7 @@ function refusal(reason: string): AskResult {
     answer: TEMPLATES.off_topic,
     disclaimer: 'Informational only. Not medical advice.',
     fallback: true,
+    source: 'basic',
     fallbackReason: reason,
   };
 }
@@ -87,6 +91,7 @@ function template(
     answer: TEMPLATES[scope],
     disclaimer: 'Informational only. Not medical advice.',
     fallback: true,
+    source: 'basic',
     fallbackReason: 'llm_unavailable_or_guardrail',
   };
 }

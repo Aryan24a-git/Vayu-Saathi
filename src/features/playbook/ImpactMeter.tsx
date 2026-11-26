@@ -9,7 +9,7 @@ interface ImpactMeterProps {
   playbook: PlaybookData;
   impact: CalculatedImpact;
   completedIds: string[];
-  playbookSource: string;
+  playbookSource: 'ai' | 'basic';
   isGeneratingAI: boolean;
   onGenerateAI: () => void;
 }
@@ -49,13 +49,16 @@ export function ImpactMeter({
               </span>
               <h3 className="font-bold text-base text-slate-900">Today’s Live Impact Meter</h3>
               <span
-                className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${
-                  playbookSource.includes('Gemini') || playbookSource.includes('AI')
+                className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
+                  playbookSource === 'ai'
                     ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
                     : 'bg-stone-100 text-slate-600 border border-stone-200'
                 }`}
               >
-                {playbookSource}
+                {playbookSource === 'ai' && <Sparkles className="w-3 h-3 text-indigo-600" />}
+                {playbookSource === 'ai'
+                  ? `AI Grounded${playbook.generatedAt ? ` · ${playbook.generatedAt}` : ''}`
+                  : 'Basic mode'}
               </span>
             </div>
             <span className="text-xs font-bold text-teal-800">
@@ -110,7 +113,13 @@ export function ImpactMeter({
             ) : (
               <Sparkles className="w-4 h-4" />
             )}
-            <span>{isGeneratingAI ? 'Synthesizing...' : 'Generate Fresh AI Playbook'}</span>
+            <span>
+              {isGeneratingAI
+                ? 'Synthesizing...'
+                : playbookSource === 'ai'
+                  ? 'Regenerate Fresh AI Playbook'
+                  : 'Generate Fresh AI Playbook'}
+            </span>
           </button>
           <p className="text-[11px] text-slate-500 text-center leading-tight">
             Synthesizes AI guidance grounded in today’s exact CPCB NAQI &amp; household math.

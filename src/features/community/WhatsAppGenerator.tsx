@@ -9,7 +9,7 @@ import { WhatsAppPreview } from './WhatsAppPreview';
 
 interface WhatsAppGeneratorProps {
   location: LocationScenario;
-  vent: VentilationWindow;
+  vent: VentilationWindow | null;
   impact: CalculatedImpact;
 }
 
@@ -17,18 +17,24 @@ function getDeterministicBulletin(
   targetLang: 'en' | 'hi',
   name: string,
   location: LocationScenario,
-  vent: VentilationWindow,
+  vent: VentilationWindow | null,
   impact: CalculatedImpact
 ) {
   const aqi = impact.aqi;
   const cleanName = name.trim() || `${location.shortCity} Residents Welfare Group`;
+  const hiVentLine = vent
+    ? `💨 *सुरक्षित वेंटिलेशन समय:* केवल *${vent.windowLabel}* के बीच खिड़कियाँ खोलें। शाम *${vent.sealLabel}* तक बंद रखें।`
+    : `💨 *सुरक्षित वेंटिलेशन:* प्रति-घंटा पूर्वानुमान उपलब्ध नहीं है — धुंध रहने तक खिड़कियाँ बंद रखें।`;
+  const enVentLine = vent
+    ? `🪟 *Safe Ventilation Window:* Open windows only during *${vent.windowLabel}*. Seal doors/windows by *${vent.sealLabel}*.`
+    : `🪟 *Ventilation Guidance:* Hourly forecast unavailable — keep windows sealed while outdoor haze remains high.`;
 
   if (targetLang === 'hi') {
     return (
       `🌿 *${cleanName} — आज का वायु स्वास्थ्य अलर्ट (VayuSaathi)*\n\n` +
       `📍 *क्षेत्र:* ${location.city}\n` +
       `📊 *CPCB NAQI:* *${aqi.naqi} (${aqi.band.label})* | PM2.5: ${location.pm25} µg/m³\n` +
-      `💨 *सुरक्षित वेंटिलेशन समय:* केवल *${vent.windowLabel}* के बीच खिड़कियाँ खोलें। शाम *${vent.sealLabel}* तक बंद रखें।\n\n` +
+      `${hiVentLine}\n\n` +
       `✅ *आज के 2 सामुदायिक संकल्प:*\n` +
       `1️⃣ *खुले में आग न जलाएँ:* कृपया गार्ड्स व सफाई कर्मियों से अनुरोध करें कि सूखे पत्ते या कचरा न जलाएँ — शांत हवा (${location.wind} km/h) में धुआँ यहीं फँस जाता है।\n` +
       `2️⃣ *कम-उत्सर्जन आवागमन:* आज अकेले कार निकालने के बजाय मेट्रो/कारपूल अपनाएँ और सूखे झाड़ू की जगह गीला पोछा लगाएँ।\n\n` +
@@ -40,7 +46,7 @@ function getDeterministicBulletin(
     `🌿 *${cleanName} — Daily Smog & Clean Air Bulletin (VayuSaathi)*\n\n` +
     `📍 *Area:* ${location.city}\n` +
     `📊 *CPCB NAQI:* *${aqi.naqi} (${aqi.band.label})* | PM2.5: ${location.pm25} µg/m³ (~${aqi.cigsPerDay} cigs/day eq.)\n` +
-    `🪟 *Safe Ventilation Window:* Open windows only during *${vent.windowLabel}*. Seal doors/windows by *${vent.sealLabel}*.\n\n` +
+    `${enVentLine}\n\n` +
     `✅ *Today's 2 Community Pledges:*\n` +
     `1️⃣ *Zero Biomass / Leaf Burning:* Please remind society night guards & sweepers not to burn dry leaves or waste tonight — calm ${location.wind} km/h winds trap smoke at breathing level.\n` +
     `2️⃣ *Smarter Commute & Wet Mopping:* Swap solo car runs for Metro/carpool where possible, avoid engine idling at our main gate, and switch from dry sweeping to wet mopping today.\n\n` +
@@ -86,8 +92,8 @@ export function WhatsAppGenerator({ location, vent, impact }: WhatsAppGeneratorP
           naqi: impact.aqi.naqi,
           bandLabel: impact.aqi.band.label,
           cigsPerDay: impact.aqi.cigsPerDay,
-          windowLabel: vent.windowLabel,
-          sealLabel: vent.sealLabel,
+          windowLabel: vent?.windowLabel ?? 'Midday window (hourly unavailable)',
+          sealLabel: vent?.sealLabel ?? 'Evening inversion',
         }),
       });
       if (res.ok) {

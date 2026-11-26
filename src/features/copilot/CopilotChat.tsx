@@ -8,12 +8,13 @@ import type { VentilationWindow } from '@/domain/naqi';
 export interface ChatMessage {
   role: 'user' | 'assistant';
   text: string;
+  source?: 'ai' | 'basic';
 }
 
 interface CopilotChatProps {
   location: LocationScenario;
   profile: HouseholdProfile;
-  vent: VentilationWindow;
+  vent: VentilationWindow | null;
   messages: ChatMessage[];
   onSendMessage: (text: string) => Promise<void>;
   onResetChat: () => void;
@@ -123,6 +124,19 @@ export function CopilotChat({ messages, onSendMessage, onResetChat, isLoading }:
               }`}
             >
               {renderFormatted(msg.text)}
+              {msg.role === 'assistant' && msg.source && (
+                <div className="mt-1.5 flex justify-end">
+                  <span
+                    className={`px-1.5 py-0.5 rounded text-[10px] font-semibold border ${
+                      msg.source === 'ai'
+                        ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                        : 'bg-stone-100 text-slate-600 border-stone-200'
+                    }`}
+                  >
+                    {msg.source === 'ai' ? 'AI' : 'Basic mode'}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         ))}

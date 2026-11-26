@@ -21,6 +21,8 @@ export interface PlaybookData {
     emissionWhy: string;
     vulnerabilityNote: string;
   };
+  aiSummary?: string;
+  generatedAt?: string;
 }
 
 export function formatVulnList(vulns: readonly string[]): string {
@@ -37,9 +39,11 @@ export function formatVulnList(vulns: readonly string[]): string {
 function buildIaqHacks(
   loc: LocationScenario,
   profile: HouseholdProfile,
-  vent: VentilationWindow,
+  vent: VentilationWindow | null,
   impact: CalculatedImpact
 ): PlaybookItem[] {
+  const ventPhrase = vent ? vent.windowLabel : 'cleanest midday hours';
+  const sealPhrase = vent ? vent.sealLabel : 'evening inversion';
   const hacks: PlaybookItem[] = [
     {
       id: 'iaq-1',
@@ -55,7 +59,7 @@ function buildIaqHacks(
     hacks.push({
       id: 'iaq-2',
       title: 'Damp Rolled-Towel Door & Window Gap Sealing',
-      detail: `Keep windows shut outside ${vent.windowLabel}. Press damp rolled cotton towels along balcony/door gaps to trap infiltrating smog.`,
+      detail: `Keep windows shut outside ${ventPhrase}. Press damp rolled cotton towels along balcony/door gaps to trap infiltrating smog.`,
       tag: '₹0 Zero-Cost',
       exposurePct: Math.round(impact.maxExposureDropPct * 0.38),
       co2Kg: 0.1,
@@ -85,7 +89,7 @@ function buildIaqHacks(
       detail:
         profile.purifier === 'none'
           ? 'Prioritize a True HEPA H13 purifier (CADR ≥ 350 m³/h) for the main bedroom.'
-          : `Keep your HEPA unit running continuously, especially from ${vent.sealLabel} through 9:00 AM.`,
+          : `Keep your HEPA unit running continuously, especially from ${sealPhrase} through 9:00 AM.`,
       tag: 'HEPA Strategy',
       exposurePct: Math.round(impact.maxExposureDropPct * 0.42),
       co2Kg: 0.1,
@@ -111,9 +115,10 @@ function buildIaqHacks(
 function buildEmissionSwaps(
   loc: LocationScenario,
   profile: HouseholdProfile,
-  vent: VentilationWindow,
+  vent: VentilationWindow | null,
   impact: CalculatedImpact
 ): PlaybookItem[] {
+  const ventPhrase = vent ? vent.windowLabel : 'midday afternoon';
   const swaps: PlaybookItem[] = [];
   if (profile.commuteMode === 'solo_car') {
     swaps.push({
@@ -157,7 +162,7 @@ function buildEmissionSwaps(
 
   swaps.push({
     id: 'swap-2',
-    title: `Shift Errands to ${vent.windowLabel} & Cut Engine Idling`,
+    title: `Shift Errands to ${ventPhrase} & Cut Engine Idling`,
     detail: `Morning (6–9 AM) and evening (6–10 PM) have the worst inversion. Batch outdoor errands during the afternoon dip.`,
     tag: 'Peak Smog Dodge',
     exposurePct: 0,
@@ -179,22 +184,23 @@ function buildEmissionSwaps(
 export function buildDeterministicPlaybook(
   loc: LocationScenario,
   profile: HouseholdProfile,
-  vent: VentilationWindow,
+  vent: VentilationWindow | null,
   impact: CalculatedImpact
 ): PlaybookData {
+  const ventPhrase = vent ? vent.windowLabel : 'cleanest midday hours';
   const isSevere = impact.aqi.naqi >= 301;
   const hasVulnerable =
     profile.vulnerabilities.includes('kids') ||
     profile.vulnerabilities.includes('seniors') ||
     profile.vulnerabilities.includes('asthma');
 
-  const healthWhy = `Keeping windows shut outside ${vent.windowLabel}, wet mopping, and cutting indoor smoke reduces your household inhaled PM2.5 load by roughly ${impact.maxExposureDropPct}% — equal to avoiding ~${impact.maxCigsAvoided} cigarettes/day today.`;
+  const healthWhy = `Keeping windows shut outside ${ventPhrase}, wet mopping, and cutting indoor smoke reduces your household inhaled PM2.5 load by roughly ${impact.maxExposureDropPct}% — equal to avoiding ~${impact.maxCigsAvoided} cigarettes/day today.`;
   const emissionWhy = `${impact.commuteSwapLabel} plus cleaner kitchen habits prevents ${impact.totalCo2Kg} kg CO₂ and ~${impact.totalNoxG}g of local NOx from trapping in ${loc.shortCity}'s calm ${loc.wind} km/h winter air.`;
   const vulnerabilityNote = hasVulnerable
     ? `High-Priority Protection (${formatVulnList(profile.vulnerabilities)}): ${
         isSevere
           ? 'Cancel outdoor morning walks/play completely today; use a sealed N95/KF94 if stepping out.'
-          : 'Schedule outdoor time strictly between ' + vent.windowLabel + '.'
+          : 'Schedule outdoor time strictly between ' + ventPhrase + '.'
       }`
     : `General Household Guidance: Even healthy adults feel throat irritation at NAQI ${impact.aqi.naqi}. Move workouts indoors today.`;
 

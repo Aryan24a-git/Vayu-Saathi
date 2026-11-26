@@ -9,7 +9,7 @@ import { DispersionChart } from './DispersionChart';
 interface HeroSectionProps {
   location: LocationScenario;
   impact: CalculatedImpact;
-  vent: VentilationWindow;
+  vent: VentilationWindow | null;
 }
 
 export function HeroSection({ location, impact, vent }: HeroSectionProps) {

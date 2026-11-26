@@ -11,6 +11,8 @@ import {
 import { boundaryError, MAX_QUERY_LENGTH, RATE_LIMITS } from '@/server/security/limits';
 import { apiErrorResponse, securityJson } from '@/server/security/response';
 import { LruCache } from '@/server/cache/lru';
+import { getEnv } from '@/server/config/env';
+import { fetchWaqiStation, type WaqiStationReading } from '@/server/providers/waqiAirQuality';
 
 const limiter = new TokenBucketLimiter(
   RATE_LIMITS.cityScenarioPerMinute,
@@ -25,14 +27,18 @@ const QuerySchema = z.object({ q: z.string().trim().min(2).max(MAX_QUERY_LENGTH)
 
 interface MeteoPayload {
   aq: {
-    current: { pm10: number; pm2_5: number; nitrogen_dioxide?: number };
+    timezone_abbreviation?: string;
+    current: { time?: string; pm10: number; pm2_5: number; nitrogen_dioxide?: number };
     hourly?: { pm2_5?: (number | null)[] };
   };
   wx: {
-    current: { wind_speed_10m: number; temperature_2m?: number };
+    current: { time?: string; wind_speed_10m: number; temperature_2m?: number };
     hourly?: { wind_speed_10m?: (number | null)[] };
   };
 }
+
+export type HourlySeriesResult =
+  { ok: true; series: number[] } | { ok: false; error: 'HOURLY_DATA_UNAVAILABLE'; message: string };
 
 async function fetchLiveMeteo(lat: number, lon: number): Promise<MeteoPayload | null> {
   try {
@@ -60,10 +66,39 @@ async function fetchLiveMeteo(lat: number, lon: number): Promise<MeteoPayload | 
   }
 }
 
-function extractHourlySeries(raw: (number | null)[] | undefined, fallback: number): number[] {
-  const series = (raw || []).slice(0, 24).map((v) => Math.max(1, Math.round(v ?? fallback)));
-  while (series.length < 24) series.push(fallback);
-  return series;
+export function extractHourlySeries(
+  raw: readonly (number | null | undefined)[] | undefined
+): HourlySeriesResult {
+  if (!raw || raw.length < 24) {
+    return {
+      ok: false,
+      error: 'HOURLY_DATA_UNAVAILABLE',
+      message: 'Hourly forecast unavailable',
+    };
+  }
+  const first24 = raw.slice(0, 24);
+  if (first24.some((v) => typeof v !== 'number' || !Number.isFinite(v))) {
+    return {
+      ok: false,
+      error: 'HOURLY_DATA_UNAVAILABLE',
+      message: 'Hourly forecast unavailable',
+    };
+  }
+  return {
+    ok: true,
+    series: first24.map((v) => Math.max(1, Math.round(v as number))),
+  };
+}
+
+export function formatObservationTime(localIsoTime: string | undefined, tzAbbr?: string): string {
+  const match = localIsoTime?.match(/[T ](\d{2}):(\d{2})/);
+  if (!match) return 'latest reading';
+  const hour24 = Number(match[1]);
+  const minute = match[2];
+  const period = hour24 >= 12 ? 'pm' : 'am';
+  const hour12 = hour24 % 12 === 0 ? 12 : hour24 % 12;
+  const tz = tzAbbr && /^[A-Z]{2,5}$/.test(tzAbbr) ? ` ${tzAbbr}` : '';
+  return `${hour12}:${minute} ${period}${tz}`;
 }
 
 function buildScenarioFromData(
@@ -75,25 +110,75 @@ function buildScenarioFromData(
   const pm10 = Math.round(data.aq.current.pm10);
   const no2 = Math.round(data.aq.current.nitrogen_dioxide ?? 0);
   const wind = Math.max(1, Math.round(data.wx.current.wind_speed_10m));
-  const hourlyPM25 = extractHourlySeries(data.aq.hourly?.pm2_5, pm25);
-  const hourlyWind = extractHourlySeries(data.wx.hourly?.wind_speed_10m, wind);
+  const pmResult = extractHourlySeries(data.aq.hourly?.pm2_5);
+  const windResult = extractHourlySeries(data.wx.hourly?.wind_speed_10m);
+  const hasHourly = pmResult.ok && windResult.ok;
+  const obsTime = formatObservationTime(
+    data.aq.current.time ?? data.wx.current.time,
+    data.aq.timezone_abbreviation
+  );
 
   return {
     id: `live-${city.toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
     city: `${city}, ${admin1 || 'India'}`,
     shortCity: city,
-    subtitle: `Live observations from Open-Meteo model (${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })})`,
+    subtitle: `Model estimate (Open-Meteo) · ${obsTime}`,
     sourceLabel: 'Model-derived NAQI equivalent (Open-Meteo)',
     pm25,
     pm10,
     no2,
     wind,
-    basePledges: 120,
-    baseCo2Kg: 420,
-    hourlyPM25,
-    hourlyWind,
+    hourlyPM25: hasHourly ? pmResult.series : [],
+    hourlyWind: hasHourly ? windResult.series : [],
+    ...(hasHourly ? {} : { hourlyError: 'Hourly forecast unavailable' }),
     isSynthetic: false,
   };
+}
+
+function buildWaqiScenario(
+  city: string,
+  admin1: string | undefined,
+  waqi: WaqiStationReading,
+  meteo: MeteoPayload | null
+): LocationScenario {
+  const pmResult = meteo ? extractHourlySeries(meteo.aq.hourly?.pm2_5) : null;
+  const windResult = meteo ? extractHourlySeries(meteo.wx.hourly?.wind_speed_10m) : null;
+  const hasHourly = Boolean(pmResult?.ok && windResult?.ok);
+  const obsTime = formatObservationTime(waqi.timeIso);
+  return {
+    id: `live-${city.toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
+    city: waqi.stationName || `${city}, ${admin1 || 'India'}`,
+    shortCity: city,
+    subtitle: `Station reading (WAQI) · ${obsTime}`,
+    sourceLabel: hasHourly ? 'WAQI Station + Open-Meteo Hourly' : 'WAQI Station (aqicn.org)',
+    pm25: waqi.pm25,
+    pm10: waqi.pm10,
+    no2: waqi.no2 ?? Math.round(meteo?.aq.current.nitrogen_dioxide ?? 0),
+    wind: waqi.windKmh ?? Math.max(1, Math.round(meteo?.wx.current.wind_speed_10m ?? 5)),
+    hourlyPM25: hasHourly && pmResult?.ok ? pmResult.series : [],
+    hourlyWind: hasHourly && windResult?.ok ? windResult.series : [],
+    ...(hasHourly ? {} : { hourlyError: 'Hourly forecast unavailable' }),
+    isSynthetic: false,
+  };
+}
+
+async function resolveLiveScenario(
+  name: string,
+  admin1: string | undefined,
+  lat: number,
+  lon: number
+): Promise<LocationScenario | null> {
+  const env = getEnv();
+  if (env.AQ_PROVIDER.toLowerCase() === 'waqi') {
+    if (!env.WAQI_API_TOKEN) return null;
+    const [waqi, meteo] = await Promise.all([
+      fetchWaqiStation(lat, lon, env.WAQI_API_TOKEN).catch(() => null),
+      fetchLiveMeteo(lat, lon),
+    ]);
+    return waqi ? buildWaqiScenario(name, admin1, waqi, meteo) : null;
+  }
+  const meteo = await fetchLiveMeteo(lat, lon);
+  return meteo ? buildScenarioFromData(name, admin1, meteo) : null;
 }
 
 export async function handleCityScenario(req: NextRequest) {
@@ -126,10 +211,9 @@ export async function handleCityScenario(req: NextRequest) {
     );
   }
 
-  // V2-30 step 6: SCENARIOS shortcut removed — q=delhi must geocode live.
-  // Demo scenarios are only served from the client-side demo flow.
   const q = parsed.data.q.toLowerCase().trim();
-  const cached = scenarioCache.get(q);
+  const cacheKey = `${getEnv().AQ_PROVIDER}:${q}`;
+  const cached = scenarioCache.get(cacheKey);
   if (cached) return securityJson(cached, 200, { [REQUEST_ID_HEADER]: requestId });
 
   const geoRes = await searchOpenMeteo(q).catch(() => []);
@@ -146,8 +230,8 @@ export async function handleCityScenario(req: NextRequest) {
   }
 
   const top = geoRes[0];
-  const meteo = await fetchLiveMeteo(top.latitude, top.longitude);
-  if (!meteo) {
+  const scenario = await resolveLiveScenario(top.name, top.admin1, top.latitude, top.longitude);
+  if (!scenario) {
     return apiErrorResponse(
       {
         code: 'PROVIDER_UNAVAILABLE',
@@ -160,7 +244,6 @@ export async function handleCityScenario(req: NextRequest) {
     );
   }
 
-  const scenario = buildScenarioFromData(top.name, top.admin1, meteo);
-  scenarioCache.set(q, scenario);
+  scenarioCache.set(cacheKey, scenario);
   return securityJson(scenario, 200, { [REQUEST_ID_HEADER]: requestId });
 }

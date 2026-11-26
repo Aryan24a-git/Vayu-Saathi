@@ -19,25 +19,14 @@ import { VentilationCallouts } from './VentilationCallouts';
 
 interface DispersionChartProps {
   location: LocationScenario;
-  vent: VentilationWindow;
+  vent: VentilationWindow | null;
   bandColor: string;
 }
 
 export function DispersionChart({ location, vent, bandColor }: DispersionChartProps) {
-  const [activeHour, setActiveHour] = useState<number>(vent.startHour);
+  const [activeHour, setActiveHour] = useState<number>(vent?.startHour ?? 12);
   const [isHovering, setIsHovering] = useState<boolean>(false);
   const svgRef = useRef<SVGSVGElement>(null);
-
-  const pmData = location.hourlyPM25;
-  const windData = location.hourlyWind;
-  const maxPM = Math.max(...pmData, 100);
-  const maxWind = Math.max(...windData, 15);
-
-  const pmPoints = buildPolylinePoints(pmData, maxPM);
-  const windPoints = buildPolylinePoints(windData, maxWind);
-  const pmArea = `${getChartX(0)},${CHART_H - PAD_B} ${pmPoints} ${getChartX(23)},${CHART_H - PAD_B}`;
-  const curX = getChartX(activeHour);
-  const isSafeSlot = activeHour >= vent.startHour && activeHour < vent.endHour;
 
   const handlePointer = useCallback((e: React.PointerEvent<SVGSVGElement>) => {
     if (!svgRef.current) return;
@@ -50,6 +39,35 @@ export function DispersionChart({ location, vent, bandColor }: DispersionChartPr
     setActiveHour(hour);
     setIsHovering(true);
   }, []);
+
+  if (
+    !vent ||
+    location.hourlyError ||
+    location.hourlyPM25.length < 24 ||
+    location.hourlyWind.length < 24
+  ) {
+    return (
+      <div className="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 flex flex-col justify-center items-center text-center min-h-[260px]">
+        <h3 className="font-bold text-base text-slate-900">Hourly forecast unavailable</h3>
+        <p className="text-xs text-slate-600 mt-1.5 max-w-md leading-relaxed">
+          A complete 24-hour pollutant and wind series was not provided for this reading, so the
+          dispersion chart and ventilation window are hidden. Your current NAQI reading and daily
+          playbook remain active.
+        </p>
+      </div>
+    );
+  }
+
+  const pmData = location.hourlyPM25;
+  const windData = location.hourlyWind;
+  const maxPM = Math.max(...pmData, 100);
+  const maxWind = Math.max(...windData, 15);
+
+  const pmPoints = buildPolylinePoints(pmData, maxPM);
+  const windPoints = buildPolylinePoints(windData, maxWind);
+  const pmArea = `${getChartX(0)},${CHART_H - PAD_B} ${pmPoints} ${getChartX(23)},${CHART_H - PAD_B}`;
+  const curX = getChartX(activeHour);
+  const isSafeSlot = activeHour >= vent.startHour && activeHour < vent.endHour;
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowRight') setActiveHour((h) => Math.min(23, h + 1));

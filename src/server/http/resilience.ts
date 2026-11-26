@@ -25,6 +25,7 @@ const ALLOWED_HOSTS = new Set([
   'api.open-meteo.com',
   'air-quality-api.open-meteo.com',
   'geocoding-api.open-meteo.com',
+  'api.waqi.info',
 ]);
 
 export function assertAllowedUpstream(url: URL): void {

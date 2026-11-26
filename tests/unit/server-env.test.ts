@@ -14,7 +14,7 @@ describe('Server Environment Configuration', () => {
     expect(env.RATE_LIMIT_PLAN).toBe(RATE_LIMITS.planPerMinute);
     expect(env.GEMINI_API_KEY).toBeUndefined();
     expect(env.GEMINI_MODEL).toBe(DEFAULT_GEMINI_MODEL);
-    expect(env.GEMINI_MODEL).toBe('gemini-3.8-flash');
+    expect(env.GEMINI_MODEL).toBe('gemini-3-flash-preview');
   });
 
   it('fails fast on invalid values with clear diagnostics', () => {

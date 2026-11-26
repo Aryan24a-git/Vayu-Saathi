@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
-  SCENARIOS,
   DEFAULT_PROFILE,
   computeDeterministicImpact,
   type HouseholdProfile,
@@ -34,9 +33,22 @@ function loadStorage<T>(key: string, fallback: T): T {
   }
 }
 
+function buildGreeting(loc: LocationScenario): ChatMessage {
+  const { naqi, band } = computeDeterministicImpact(loc, DEFAULT_PROFILE).aqi;
+  const hasHourly = !loc.hourlyError && loc.hourlyPM25.length >= 24 && loc.hourlyWind.length >= 24;
+  const v = hasHourly ? findSafeVentilationWindow(loc.hourlyPM25, loc.hourlyWind) : null;
+  const slotNote = v
+    ? `Your safest cross-ventilation slot today is **${v.windowLabel}**.`
+    : 'Hourly forecast unavailable — limit outdoor activity during haze.';
+  return {
+    role: 'assistant',
+    source: 'basic',
+    text: `Namaste! I'm **VayuSaathi**. Right now **${loc.city}** is at **CPCB NAQI ${naqi} (${band.label})** with PM2.5 at ${loc.pm25} µg/m³.\n\n${slotNote} Ask me anything in English, Hindi, or Hinglish!`,
+  };
+}
+
 export function useVayuSaathi() {
   const { showToast } = useToast();
-  const [scenarioKey, setScenarioKey] = useState('');
   const [selectedLocation, setSelectedLocation] = useState<LocationScenario | null>(null);
   const [isLoadingCity, setIsLoadingCity] = useState(false);
   const [cityError, setCityError] = useState<string | null>(null);
@@ -47,7 +59,7 @@ export function useVayuSaathi() {
   const [completedIds, setCompletedIds] = useState<string[]>([]);
   const [hotspots, setHotspots] = useState<HotspotReport[]>(INITIAL_HOTSPOTS);
   const [upvotedIds, setUpvotedIds] = useState<string[]>([]);
-  const [playbookSource, setPlaybookSource] = useState('Smart Local Engine');
+  const [playbookSource, setPlaybookSource] = useState<'ai' | 'basic'>('basic');
   const [aiPlaybook, setAiPlaybook] = useState<PlaybookData | null>(null);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -64,9 +76,8 @@ export function useVayuSaathi() {
         return;
       }
       setSelectedLocation(newLoc);
-      setScenarioKey('');
       setAiPlaybook(null);
-      setPlaybookSource('Smart Local Engine');
+      setPlaybookSource('basic');
       try {
         localStorage.setItem(STORAGE.lastCity, cityQuery);
       } catch {
@@ -98,7 +109,10 @@ export function useVayuSaathi() {
 
   const vent = useMemo(
     () =>
-      selectedLocation
+      selectedLocation &&
+      !selectedLocation.hourlyError &&
+      selectedLocation.hourlyPM25.length >= 24 &&
+      selectedLocation.hourlyWind.length >= 24
         ? findSafeVentilationWindow(selectedLocation.hourlyPM25, selectedLocation.hourlyWind)
         : null,
     [selectedLocation]
@@ -108,50 +122,22 @@ export function useVayuSaathi() {
     [selectedLocation, profile]
   );
   const playbook = useMemo(() => {
-    if (!selectedLocation || !vent || !impact) return null;
+    if (!selectedLocation || !impact) return null;
     return aiPlaybook || buildDeterministicPlaybook(selectedLocation, profile, vent, impact);
   }, [aiPlaybook, selectedLocation, profile, vent, impact]);
 
   const initGreeting = useCallback((loc: LocationScenario) => {
-    const { naqi, band } = computeDeterministicImpact(loc, DEFAULT_PROFILE).aqi;
-    const v = findSafeVentilationWindow(loc.hourlyPM25, loc.hourlyWind);
-    setChatMessages([
-      {
-        role: 'assistant',
-        text: `Namaste! I'm **VayuSaathi**. Right now **${loc.city}** is at **CPCB NAQI ${naqi} (${band.label})** with PM2.5 at ${loc.pm25} µg/m³.\n\nYour safest cross-ventilation slot today is **${v.windowLabel}**. Ask me anything in English, Hindi, or Hinglish!`,
-      },
-    ]);
+    setChatMessages([buildGreeting(loc)]);
   }, []);
 
   const defaultMessages = useMemo<ChatMessage[]>(() => {
-    if (!selectedLocation) return [];
-    const { naqi, band } = computeDeterministicImpact(selectedLocation, DEFAULT_PROFILE).aqi;
-    const v = findSafeVentilationWindow(selectedLocation.hourlyPM25, selectedLocation.hourlyWind);
-    return [
-      {
-        role: 'assistant',
-        text: `Namaste! I'm **VayuSaathi**. Right now **${selectedLocation.city}** is at **CPCB NAQI ${naqi} (${band.label})** with PM2.5 at ${selectedLocation.pm25} µg/m³.\n\nYour safest cross-ventilation slot today is **${v.windowLabel}**. Ask me anything in English, Hindi, or Hinglish!`,
-      },
-    ];
+    return selectedLocation ? [buildGreeting(selectedLocation)] : [];
   }, [selectedLocation]);
-
-  const handleScenarioChange = (key: string) => {
-    const clean = key.replace(/^demo:/, '');
-    if (SCENARIOS[clean]) {
-      setScenarioKey(`demo:${clean}`);
-      setSelectedLocation({ ...SCENARIOS[clean] });
-      setCityError(null);
-      setAiPlaybook(null);
-      setChatMessages([]);
-      setPlaybookSource('Smart Local Engine');
-      showToast(`Loaded demo scenario: ${SCENARIOS[clean].city} (synthetic data).`, 'info');
-    }
-  };
 
   const handleSaveProfile = (newProfile: HouseholdProfile) => {
     setProfile(newProfile);
     setAiPlaybook(null);
-    setPlaybookSource('Smart Local Engine');
+    setPlaybookSource('basic');
     try {
       localStorage.setItem(STORAGE.profile, JSON.stringify(newProfile));
     } catch {
@@ -204,7 +190,6 @@ export function useVayuSaathi() {
       // ignore
     }
     setSelectedLocation(null);
-    setScenarioKey('');
     setCityError(null);
     setLastCityQuery(null);
     setProfile(DEFAULT_PROFILE);
@@ -217,7 +202,6 @@ export function useVayuSaathi() {
   };
 
   return {
-    scenarioKey,
     location: selectedLocation,
     selectedLocation,
     setLocation: setSelectedLocation,
@@ -244,7 +228,6 @@ export function useVayuSaathi() {
     setIsGeneratingAI,
     isChatLoading,
     setIsChatLoading,
-    handleScenarioChange,
     handleSaveProfile,
     togglePledge,
     toggleUpvote,

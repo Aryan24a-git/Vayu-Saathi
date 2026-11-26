@@ -11,7 +11,7 @@ import { SmogPinboard, type HotspotReport } from './SmogPinboard';
 interface CommunityTabProps {
   location: LocationScenario;
   profile: HouseholdProfile;
-  vent: VentilationWindow;
+  vent: VentilationWindow | null;
   impact: CalculatedImpact;
   completedPledgesCount: number;
   userCo2Kg: number;
@@ -33,27 +33,33 @@ export function CommunityTab({
   onAddHotspot,
   onToggleUpvote,
 }: CommunityTabProps) {
-  const totalPledges = location.basePledges + completedPledgesCount;
-  const totalCo2 = Math.round(location.baseCo2Kg + userCo2Kg);
+  const totalPledges = completedPledgesCount;
+  const totalCo2 = Number(userCo2Kg.toFixed(2));
 
   return (
     <section aria-label="Community &amp; RWA Action Hub" className="space-y-5">
-      {/* Live Community Momentum Banner */}
+      {/* Device-Local Action Tracker Banner */}
       <div className="bg-gradient-to-r from-slate-900 via-teal-950 to-slate-900 text-white rounded-2xl p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <div className="w-12 h-12 rounded-2xl bg-teal-500/20 border border-teal-400/30 flex items-center justify-center shrink-0">
             <Globe2 className="w-6 h-6 text-teal-300" />
           </div>
           <div>
-            <div className="text-xs font-semibold uppercase tracking-wider text-teal-300">
-              Live Community Momentum
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-semibold uppercase tracking-wider text-teal-300">
+                Your actions on this device
+              </span>
+              {location.isSynthetic && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-300 text-amber-950">
+                  Sample data
+                </span>
+              )}
             </div>
             <h3 className="font-bold text-lg sm:text-xl leading-snug">
-              {location.shortCity} Residents Collective Action Today
+              {location.shortCity} Action &amp; RWA Hub
             </h3>
             <p className="text-xs text-slate-300 mt-0.5">
-              Every checklist item you complete in Daily Playbook updates this ward counter in real
-              time.
+              Every checklist item you complete in Daily Playbook updates this local device counter.
             </p>
           </div>
         </div>

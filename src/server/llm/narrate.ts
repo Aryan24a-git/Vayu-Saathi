@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import type { Profile } from '../../domain/profile';
 import { LruCache } from '../cache/lru';
-import { createLlmClient, type LlmClient } from './client';
+import { createLlmClient, stripMarkdownCodeFences, type LlmClient } from './client';
 import { DailyCallBudget } from './budget';
 import { NARRATION_SYSTEM_PROMPT, PROMPT_VERSION } from './prompts';
 import { NarrativeSchema, type NarrativeOutput } from './schema';
@@ -52,11 +52,12 @@ export async function narrate(
     prompt: `<grounded_data>${prompt}</grounded_data>`,
     maxTokens: 700,
     timeoutMs: 12_000,
+    jsonMode: true,
   });
   if (!raw) return fallback(items, band, 'client_failure');
   let parsed: unknown;
   try {
-    parsed = JSON.parse(raw);
+    parsed = JSON.parse(stripMarkdownCodeFences(raw));
   } catch {
     return fallback(items, band, 'invalid_json');
   }

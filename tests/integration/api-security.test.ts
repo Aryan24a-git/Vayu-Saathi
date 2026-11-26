@@ -159,7 +159,8 @@ describe('API boundary security', () => {
 
   it('returns health and config-only readiness', async () => {
     expect(healthGet().status).toBe(200);
-    expect(readyGet(request('http://localhost/api/ready')).status).toBe(200);
+    const readyRes = await readyGet(request('http://localhost/api/ready'));
+    expect(readyRes.status).toBe(200);
   });
 
   it('city-scenario geocodes delhi live with MSW and returns isSynthetic: false', async () => {

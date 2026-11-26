@@ -118,26 +118,6 @@ async function runSmoke() {
     })) && allPass;
 
   allPass =
-    (await check('POST /api/audit (Photo IAQ Audit in Basic Mode)', async () => {
-      const res = await fetch(`${BASE_URL}/api/audit`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          focusArea: 'Window or Door Gap',
-          city: 'New Delhi',
-          naqi: 412,
-          pm25: 285,
-          budgetTier: 'zero_cost',
-          imageBase64: tinyPngBase64,
-        }),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
-      if (json.status !== 'success' || !json.immediateFix)
-        throw new Error('Invalid audit feedback');
-    })) && allPass;
-
-  allPass =
     (await check('POST /api/ask (Follow-up Q&A with Guardrails)', async () => {
       const res = await fetch(`${BASE_URL}/api/ask`, {
         method: 'POST',

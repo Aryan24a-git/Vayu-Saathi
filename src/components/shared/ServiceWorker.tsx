@@ -10,7 +10,17 @@ interface ServiceWorkerProps {
 
 export function ServiceWorker({ nonce: _nonce }: ServiceWorkerProps) {
   useEffect(() => {
-    if (!('serviceWorker' in navigator) || process.env.NODE_ENV !== 'production') return;
+    if (!('serviceWorker' in navigator)) return;
+
+    if (process.env.NODE_ENV !== 'production') {
+      navigator.serviceWorker.getRegistrations().then((regs) => {
+        regs.forEach((r) => void r.unregister());
+      });
+      if ('caches' in window) {
+        caches.keys().then((keys) => keys.forEach((k) => void caches.delete(k)));
+      }
+      return;
+    }
 
     // Unregister any worker using an old cache name before registering new one
     navigator.serviceWorker.getRegistrations().then((regs) => {

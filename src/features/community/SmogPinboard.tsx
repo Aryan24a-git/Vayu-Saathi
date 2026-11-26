@@ -85,7 +85,7 @@ export function SmogPinboard({
           {hotspots.length === 0 ? (
             <div className="h-full min-h-[180px] rounded-2xl border-2 border-dashed border-stone-200 flex flex-col items-center justify-center p-6 text-center text-slate-500">
               <p className="text-xs font-semibold text-slate-700">
-                No reports logged on this device yet
+                No reports yet. Add the first one (saved on this device only)
               </p>
               <p className="text-[11px] text-slate-500 mt-1 max-w-sm">
                 Use the form to record local observations (e.g. leaf burning or dust). Reports stay

@@ -2,7 +2,7 @@
 // Cache name is versioned; old caches are deleted on activate.
 // Satisfies: REQ-010 (offline fallback), V2-30 step 4
 
-const CACHE_VERSION = 'vs-v3';
+const CACHE_VERSION = 'vs-v4';
 const CACHE_NAME = `vayusaathi-${CACHE_VERSION}`;
 const SHELL = ['/'];
 

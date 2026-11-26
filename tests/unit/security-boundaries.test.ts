@@ -5,12 +5,10 @@ import { z } from 'zod';
 import { NextRequest } from 'next/server';
 import {
   BODY_LIMITS,
-  MAX_AUDIT_BODY_BYTES,
   MAX_BODY_BYTES,
   RATE_LIMITS,
   readJsonBoundary,
 } from '../../src/server/security/limits';
-import { handleAudit, verifyImageMagicBytes } from '../../src/server/api/audit';
 import { handleAsk } from '../../src/server/api/ask';
 import { handlePlan } from '../../src/server/api/plan';
 
@@ -25,41 +23,6 @@ describe('Security Boundaries & Single Limits Table', () => {
     const res = await readJsonBoundary(req, z.object({ payload: z.string() }), 'req-stream');
     expect(res.ok).toBe(false);
     if (!res.ok) expect(res.status).toBe(413);
-  });
-
-  it('enforces decoded/JSON audit body cap (256 kB)', async () => {
-    const oversized = JSON.stringify({
-      focusArea: 'Window',
-      imageBase64: 'A'.repeat(MAX_AUDIT_BODY_BYTES + 50),
-    });
-    const req = new NextRequest('http://localhost/api/audit', {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'x-forwarded-for': '203.0.113.201',
-      },
-      body: oversized,
-    });
-    const res = await handleAudit(req);
-    expect(res.status).toBe(413);
-  });
-
-  it('accepts valid JPEG, PNG, and WebP magic bytes and rejects spoofed binaries', () => {
-    const jpeg =
-      'data:image/jpeg;base64,' +
-      Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0, 0, 0, 0]).toString('base64');
-    const png =
-      'data:image/png;base64,' +
-      Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]).toString('base64');
-    const webp =
-      'data:image/webp;base64,' + Buffer.from('RIFF\x00\x00\x00\x00WEBPVP8 ').toString('base64');
-    const fakeSvg =
-      'data:image/png;base64,' + Buffer.from('<svg onload=alert(1)>').toString('base64');
-
-    expect(verifyImageMagicBytes(jpeg)).toBe(true);
-    expect(verifyImageMagicBytes(png)).toBe(true);
-    expect(verifyImageMagicBytes(webp)).toBe(true);
-    expect(verifyImageMagicBytes(fakeSvg)).toBe(false);
   });
 
   it('enforces off-topic & injection refusals on /api/ask', async () => {

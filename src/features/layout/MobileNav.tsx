@@ -42,7 +42,7 @@ export function MobileNav({ activeTab, onTabChange }: MobileNavProps) {
           }`}
         >
           <Sparkles className="w-5 h-5 mb-0.5" />
-          <span>Ask AI &amp; Audit</span>
+          <span>Ask AI</span>
         </button>
 
         <button

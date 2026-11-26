@@ -5,7 +5,6 @@ import { createApiError, ErrorCode } from '../http/errors';
 /** Single authoritative body and query limits table (API.md & SECURITY.md). */
 export const BODY_LIMITS = {
   defaultJsonBytes: 16 * 1024,
-  auditJsonBytes: 256 * 1024,
   maxQueryLength: 100,
   maxQuestionLength: 300,
 } as const;
@@ -15,7 +14,6 @@ export const RATE_LIMITS = {
   planPerMinute: 6,
   planNarratePerMinute: 6,
   playbookPerMinute: 15,
-  auditPerMinute: 4,
   askPerMinute: 8,
   bulletinPerMinute: 10,
   cityScenarioPerMinute: 30,
@@ -24,7 +22,6 @@ export const RATE_LIMITS = {
 } as const;
 
 export const MAX_BODY_BYTES = BODY_LIMITS.defaultJsonBytes;
-export const MAX_AUDIT_BODY_BYTES = BODY_LIMITS.auditJsonBytes;
 export const MAX_QUERY_LENGTH = BODY_LIMITS.maxQueryLength;
 export const MAX_QUESTION_LENGTH = BODY_LIMITS.maxQuestionLength;
 

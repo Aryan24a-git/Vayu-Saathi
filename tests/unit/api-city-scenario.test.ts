@@ -15,7 +15,8 @@ const GEOCODE_DELHI = [
 ];
 
 const MOCK_FETCH_AQ = {
-  current: { pm10: 220, pm2_5: 160, nitrogen_dioxide: 45 },
+  timezone_abbreviation: 'IST',
+  current: { time: '2026-11-26T14:30', pm10: 220, pm2_5: 160, nitrogen_dioxide: 45 },
   hourly: { pm2_5: Array(48).fill(160), pm10: Array(48).fill(220) },
 };
 
@@ -54,10 +55,28 @@ describe('/api/city-scenario Endpoint', () => {
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data.isSynthetic).toBe(false);
+    expect(data.subtitle).toContain('Model estimate (Open-Meteo)');
+    expect(data.subtitle).toContain('2:30 pm');
+    expect('basePledges' in data).toBe(false);
+    expect('baseCo2Kg' in data).toBe(false);
     expect(data.hourlyPM25).toHaveLength(24);
     expect(data.hourlyWind).toHaveLength(24);
     expect(data.pm25).toBeGreaterThan(0);
     vi.unstubAllGlobals();
+  });
+
+  it('extractHourlySeries returns typed error when missing or shorter than 24 values (no padding)', async () => {
+    const { extractHourlySeries } = await import('../../src/server/api/cityScenario');
+    expect(extractHourlySeries(undefined)).toEqual({
+      ok: false,
+      error: 'HOURLY_DATA_UNAVAILABLE',
+      message: 'Hourly forecast unavailable',
+    });
+    expect(extractHourlySeries([120, 130, 140])).toEqual({
+      ok: false,
+      error: 'HOURLY_DATA_UNAVAILABLE',
+      message: 'Hourly forecast unavailable',
+    });
   });
 
   it('returns 404 when city not found in geocoding', async () => {

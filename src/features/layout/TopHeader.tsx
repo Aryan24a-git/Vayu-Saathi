@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   Wind,
-  ChevronDown,
   SlidersHorizontal,
   MapPin,
   Radio,
@@ -22,8 +21,6 @@ import type { HouseholdProfile, LocationScenario } from '@/domain/scenarios';
 import { formatVulnList } from '@/domain/playbookEngine';
 
 interface TopHeaderProps {
-  scenarioKey: string;
-  onScenarioChange: (key: string) => void;
   activeLocation: LocationScenario | null;
   profile: HouseholdProfile;
   activeTab: 'playbook' | 'copilot' | 'community';
@@ -33,8 +30,6 @@ interface TopHeaderProps {
 }
 
 export function TopHeader({
-  scenarioKey,
-  onScenarioChange,
   profile,
   activeTab,
   onTabChange,
@@ -113,25 +108,7 @@ export function TopHeader({
             </div>
           </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
-            <div className="relative flex-1 sm:flex-initial">
-              <select
-                value={scenarioKey}
-                onChange={(e) => onScenarioChange(e.target.value)}
-                aria-label="Try a demo scenario"
-                className="w-full sm:w-64 appearance-none bg-stone-50 hover:bg-stone-100 border border-stone-300 text-slate-800 text-xs sm:text-sm font-medium rounded-xl pl-3 pr-9 py-2.5 focus:outline-none focus:ring-2 focus:ring-teal-600 transition cursor-pointer"
-              >
-                <option value="">Try a demo scenario...</option>
-                <optgroup label="Demo Scenarios (Synthetic Data)">
-                  <option value="demo:delhi">Demo: New Delhi — Severe</option>
-                  <option value="demo:patna">Demo: Patna — Very Poor</option>
-                  <option value="demo:kolkata">Demo: Kolkata — Poor/VP</option>
-                  <option value="demo:bengaluru">Demo: Bengaluru — Moderate</option>
-                </optgroup>
-              </select>
-              <ChevronDown className="w-4 h-4 text-slate-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
-
+          <div className="flex items-center gap-2">
             <button
               onClick={onOpenProfile}
               type="button"
@@ -226,7 +203,7 @@ export function TopHeader({
             }`}
           >
             <Sparkles className="w-4 h-4" />
-            <span>Ask AI &amp; Room Audit</span>
+            <span>Ask AI</span>
           </button>
           <button
             onClick={() => onTabChange('community')}
