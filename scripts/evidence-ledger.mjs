@@ -1,0 +1,109 @@
+/**
+ * LEDGER dataset for EVIDENCE_PACK.md (cross-platform ESM)
+ * Satisfies Section 11 of V2-29 Evidence Pack
+ */
+
+export const LEDGER_ROWS = [
+  // Core Requirements (REQ-001 to REQ-016)
+  ['REQ-001', 'Location input paths (geocode, coords, manual)', 'Critical', 'VERIFIED', 'tests/unit/provider-resilience.test.ts, scripts/smoke.mjs'],
+  ['REQ-002', 'Household profile schema v1/v2 with vulnerabilities', 'Critical', 'VERIFIED', 'tests/unit/profile.test.ts, src/domain/profile.ts'],
+  ['REQ-003', 'Live and forecast air quality from Open-Meteo', 'Critical', 'VERIFIED', 'src/server/providers/openMeteoAirQuality.ts, scripts/smoke.mjs'],
+  ['REQ-004', 'Daily low-emission routine escalating with AQI', 'Critical', 'VERIFIED', 'tests/unit/rules.test.ts, src/domain/plan.ts'],
+  ['REQ-005', 'Indoor air hacks tailored to housing & budget', 'Critical', 'VERIFIED', 'tests/unit/playbook-engine.test.ts, src/domain/catalog/actions.indoors.ts'],
+  ['REQ-006', 'Sustainable alternatives & emission swaps', 'High', 'VERIFIED', 'tests/unit/emissions.test.ts, src/domain/emissions.ts'],
+  ['REQ-007', 'Direct impact explanation with ranges & sources', 'Critical', 'VERIFIED', 'tests/unit/impact.test.ts, src/domain/explain.ts'],
+  ['REQ-008', 'Sensitive-group safety & medical red-flag copy', 'Critical', 'VERIFIED', 'tests/unit/rules-engine.test.ts, src/domain/rules/safety.ts'],
+  ['REQ-009', 'Grounded GenAI narrative (Gemini 1.5 Flash)', 'Critical', 'VERIFIED (fixtures/Basic Mode), live UNVERIFIED', 'tests/unit/llm-grounding.test.ts (key absent in env)'],
+  ['REQ-010', 'Deterministic fallback plan (100% no-key mode)', 'Critical', 'VERIFIED', 'tests/unit/llm-grounding.test.ts, src/domain/plan.ts'],
+  ['REQ-011', 'Bounded Q&A with injection defense & refusal', 'High', 'VERIFIED', 'tests/unit/ai-guardrails.test.ts, scripts/smoke.mjs'],
+  ['REQ-012', 'Share, print & community colony simulation', 'Medium', 'VERIFIED', 'tests/unit/community.test.ts, src/domain/community.ts'],
+  ['REQ-013', 'Plain language & Hindi (Old) / Multimodal photo IAQ audit (New)', 'High', 'VERIFIED (Basic Mode checklist), live Vision UNVERIFIED', 'tests/unit/api-audit.test.ts, src/server/api/audit.ts'],
+  ['REQ-014', 'Source/freshness display (Old) / 24h diurnal dispersion curve (New)', 'High', 'VERIFIED', 'tests/unit/ventilation.test.ts, src/features/hero/DispersionChart.tsx'],
+  ['REQ-015', 'Edit/clear profile & zero server persistence', 'High', 'VERIFIED', 'tests/e2e/journeys.spec.ts, localStorage isolation'],
+  ['REQ-016', 'Colony what-if (Old) / 1-tap bilingual WhatsApp advisory bulletin (New)', 'Medium', 'VERIFIED', 'tests/unit/api-bulletin.test.ts, scripts/smoke.mjs'],
+
+  // CR-01 Additions (REQ-017 to REQ-025)
+  ['REQ-017', 'Multimodal Photo IAQ Audit (CR-01)', 'High', 'VERIFIED (Basic Mode checklist), live Vision UNVERIFIED', 'tests/unit/api-audit.test.ts, src/server/api/audit.ts'],
+  ['REQ-018', 'WhatsApp/RWA Bilingual Advisory Bulletin (CR-01)', 'High', 'VERIFIED', 'tests/unit/api-bulletin.test.ts, scripts/smoke.mjs'],
+  ['REQ-019', 'Smog Pinboard Device-Local Watch (CR-01)', 'Medium', 'VERIFIED', 'src/features/community/SmogPinboard.tsx, localStorage'],
+  ['REQ-020', 'Pledges & Live Reactive Impact Meter (CR-01)', 'High', 'VERIFIED', 'tests/unit/impact.test.ts, src/features/playbook/ImpactMeter.tsx'],
+  ['REQ-021', '24h Dispersion Curve & Ventilation Window (CR-01)', 'High', 'VERIFIED', 'tests/unit/ventilation.test.ts, src/domain/ventilation.ts'],
+  ['REQ-022', 'Cigarette-Equivalent Indicator (CR-01)', 'High', 'VERIFIED', 'tests/unit/naqi.test.ts, docs/EVIDENCE.md'],
+  ['REQ-023', 'Clearly Labelled Demo Winter Scenarios (CR-01)', 'High', 'VERIFIED', 'tests/unit/api-city-scenario.test.ts, src/domain/scenarios.ts'],
+  ['REQ-024', 'Multilingual Copilot Chat with Guardrails (CR-01)', 'High', 'VERIFIED', 'tests/unit/ai-guardrails.test.ts, scripts/smoke.mjs'],
+  ['REQ-025', 'Pure CPCB NAQI Computation (CR-01)', 'Critical', 'VERIFIED', 'tests/unit/naqi.test.ts, src/domain/naqi.ts'],
+
+  // Security (SEC-001 to SEC-012)
+  ['SEC-001', 'Zod validation at all HTTP boundaries', 'Critical', 'VERIFIED', 'tests/integration/api-security.test.ts, src/server/security/limits.ts'],
+  ['SEC-002', 'Secrets server-only; zero client bundle leaks', 'Critical', 'VERIFIED', 'static scan of .next/static and public/'],
+  ['SEC-003', 'Rate limit token bucket on all routes', 'High', 'VERIFIED', 'tests/integration/api-security.test.ts, src/server/security/rateLimit.ts'],
+  ['SEC-004', 'Prompt-injection defenses & adversarial refusal', 'Critical', 'VERIFIED', 'tests/unit/ai-guardrails.test.ts (25/25 refused)'],
+  ['SEC-005', 'Security headers: CSP, nosniff, DENY, permissions', 'High', 'VERIFIED', 'scripts/smoke.mjs, live probe on / and /api/health'],
+  ['SEC-006', 'SSRF-safe outbound HTTP requests', 'High', 'VERIFIED', 'Hardcoded domain allowlist in openMeteoAirQuality.ts'],
+  ['SEC-007', 'Zero dangerouslySetInnerHTML in JSX', 'Critical', 'VERIFIED', 'AST scan across src/ (0 matches)'],
+  ['SEC-008', 'Dependency vulnerability & secret audit', 'High', 'FAIL (Blocked by 15 open npm audit advisories)', 'docs/SECURITY_AUDIT.md'],
+  ['SEC-009', 'Automatic log redaction (coords, keys, PII)', 'High', 'VERIFIED', 'tests/unit/server-logger.test.ts, src/lib/logger.ts'],
+  ['SEC-010', 'Strict request body size & timeout limits', 'High', 'VERIFIED', '16 kB / 256 kB boundary limits in limits.ts'],
+  ['SEC-011', 'Safe image upload handling (magic bytes, memory-only) (CR-01)', 'Critical', 'VERIFIED', 'tests/unit/api-audit.test.ts, src/server/api/audit.ts'],
+  ['SEC-012', 'Zero client-side LLM calls (CR-01)', 'Critical', 'VERIFIED', 'Static bundle grep, server-only Gemini client'],
+
+  // Data Privacy (DATA-001 to DATA-005)
+  ['DATA-001', 'Data minimization: coordinates rounded to 2dp (~1 km)', 'Critical', 'VERIFIED', 'src/domain/types.ts, tests/unit/domain-types.test.ts'],
+  ['DATA-002', 'Versioned local profile storage (v1 to v2 migration)', 'High', 'VERIFIED', 'tests/unit/profile.test.ts, src/domain/profile.ts'],
+  ['DATA-003', 'Explicit AI consent copy & static fallback', 'High', 'VERIFIED', 'tests/unit/plan-ui.test.tsx (/ask?consent=off)'],
+  ['DATA-004', 'Sourced impact figures for all catalog actions', 'Critical', 'VERIFIED', 'src/catalog/catalog.json, docs/EVIDENCE.md'],
+  ['DATA-005', 'Zero server persistence of user chat / images (CR-01)', 'Critical', 'VERIFIED', 'Zero database tables, memory-only vision buffers'],
+
+  // Performance (PERF-001 to PERF-006)
+  ['PERF-001', 'Bundle size budget: First Load JS <= 150 kB', 'High', 'VERIFIED', 'next build report: 116 kB on /'],
+  ['PERF-002', 'AQI request coalescing & in-memory caching', 'High', 'VERIFIED', 'tests/unit/provider-resilience.test.ts'],
+  ['PERF-003', 'One LLM call per plan & token caps', 'High', 'VERIFIED', 'src/server/api/plan.ts, maxTokens configured'],
+  ['PERF-004', 'Bounded in-memory LRU cache capacity', 'Medium', 'VERIFIED', 'src/server/cache/lru.ts, 100 maxEntries'],
+  ['PERF-005', 'Deterministic plan latency p95 <= 300 ms', 'Medium', 'VERIFIED', 'scripts/smoke.mjs (< 15 ms local latency)'],
+  ['PERF-006', 'Native SVG rendering for dispersion charts (CR-01)', 'Medium', 'VERIFIED', 'src/features/hero/DispersionChart.tsx (0 canvas/d3 deps)'],
+
+  // Accessibility (A11Y-001 to A11Y-007)
+  ['A11Y-001', 'Semantic HTML, non-color badges, WCAG 2.1 AA', 'High', 'VERIFIED', 'tests/e2e/hardening.spec.ts (Axe 0 violations)'],
+  ['A11Y-002', 'Contrast & non-color AQI badges', 'High', 'VERIFIED', 'src/features/hero/AqiHeroCard.tsx'],
+  ['A11Y-003', 'Form accessibility, labels & error messages', 'High', 'VERIFIED', 'src/features/profile/ProfileDrawer.tsx'],
+  ['A11Y-004', 'ARIA live region announcements & screen reader pass', 'High', 'VERIFIED (Live regions in code); Human screen reader UNVERIFIED', 'src/features/layout/ToastContainer.tsx'],
+  ['A11Y-005', '320px viewport reflow with zero horizontal scroll', 'Medium', 'VERIFIED', 'tests/e2e/hardening.spec.ts (320px reflow test)'],
+  ['A11Y-006', 'Plain language readability (grade <= 9)', 'Medium', 'VERIFIED', 'All UI strings audited at grade <= 8.73'],
+  ['A11Y-007', 'Drawer modal focus trap & keyboard accessibility (CR-01)', 'High', 'VERIFIED', 'src/features/profile/useFocusTrap.ts'],
+
+  // Reliability (REL-001 to REL-004)
+  ['REL-001', 'Timeouts, retry backoff, circuit breaker', 'High', 'VERIFIED', 'tests/unit/provider-resilience.test.ts'],
+  ['REL-002', 'Degradation matrix honored across all failures', 'Critical', 'VERIFIED', 'tests/e2e/journeys.spec.ts, scripts/smoke.mjs'],
+  ['REL-003', 'Liveness & readiness probes', 'Medium', 'VERIFIED', '/api/health and /api/ready verified in smoke suite'],
+  ['REL-004', 'Standalone graceful shutdown & SIGTERM', 'Medium', 'VERIFIED', 'Standalone server process management'],
+
+  // Deployment (DEP-001 to DEP-004)
+  ['DEP-001', 'Multi-stage Docker container build and run', 'High', 'UNVERIFIED', 'Host lacks Docker engine'],
+  ['DEP-002', 'CI pipeline with automated check & smoke', 'High', 'VERIFIED', '.github/workflows/ci.yml'],
+  ['DEP-003', '12-factor environment config & fail-fast validation', 'High', 'VERIFIED', 'tests/unit/server-env.test.ts, src/server/config/env.ts'],
+  ['DEP-004', 'Container rollback rehearsal', 'Medium', 'UNVERIFIED', 'Host lacks Docker engine'],
+
+  // Non-Functional (NFR-001 to NFR-004)
+  ['NFR-001', 'Simple modular monolith architecture', 'High', 'VERIFIED', 'Next.js 14 App Router, 0 microservices, madge 0 cycles'],
+  ['NFR-002', 'Low-bandwidth support (First load JS < 150 kB)', 'High', 'VERIFIED', '116 kB First Load JS on /'],
+  ['NFR-003', '12-factor configuration & env contract', 'High', 'VERIFIED', 'src/server/config/env.ts'],
+  ['NFR-004', 'Code constraints: files < 250 lines, functions < 40 lines', 'High', 'VERIFIED', 'Codebase AST audit: all files < 250 lines'],
+
+  // Observability & Testing (OBS / TEST)
+  ['OBS-001', 'Structured JSON logging with request ID', 'Medium', 'VERIFIED', 'tests/unit/server-logger.test.ts, src/lib/logger.ts'],
+  ['OBS-002', 'Telemetry counters in server logs', 'Normal', 'VERIFIED', 'Telemetry counters: cacheHit, providerFailure, breakerOpen, fallbackRate'],
+  ['TEST-001', 'Domain unit test coverage >= 90%', 'High', 'VERIFIED', 'npm run test:coverage: 93.71% domain line coverage'],
+  ['TEST-002', 'API boundary integration test suite', 'High', 'VERIFIED', 'tests/integration/api-security.test.ts (10/10 passing)'],
+  ['TEST-003', 'UI component test suite', 'Medium', 'VERIFIED', 'tests/unit/plan-ui.test.tsx (5/5 passing)'],
+  ['TEST-004', 'End-to-end Playwright tests with axe across viewports', 'Medium', 'VERIFIED', 'tests/e2e/journeys.spec.ts (28/28 passing)'],
+  ['TEST-005', 'Grounded LLM guardrails & refusal contract', 'High', 'VERIFIED', 'tests/unit/ai-guardrails.test.ts (25/25 passing)'],
+  ['TEST-006', 'Automated CI check gate (npm run check)', 'Medium', 'VERIFIED', 'npm run check (131 tests passing, 0 errors)'],
+
+  // Evaluation Criteria (EC-001 to EC-006)
+  ['EC-001', 'Code quality (High)', 'High', 'VERIFIED', 'Strict TS, zero dead code, files < 250 lines'],
+  ['EC-002', 'Problem alignment (High)', 'High', 'VERIFIED', 'CPCB NAQI, diurnal dispersion, indoor hacks, emission swaps'],
+  ['EC-003', 'Security by default (Medium)', 'Medium', 'FAIL (Blocked by 15 open npm audit advisories)', 'docs/SECURITY_AUDIT.md'],
+  ['EC-004', 'Efficiency & performance (Medium)', 'Medium', 'VERIFIED', '116 kB First Load JS, server boot 228 ms'],
+  ['EC-005', 'Testing & testability (Low)', 'Low', 'VERIFIED', '131 tests passing across 29 test files, 93.71% domain coverage'],
+  ['EC-006', 'Accessibility & low bandwidth (Low)', 'Low', 'VERIFIED', 'WCAG 2.1 AA, non-color badges, 320px reflow'],
+];

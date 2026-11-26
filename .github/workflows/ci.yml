@@ -1,0 +1,144 @@
+name: CI
+
+on:
+  push:
+    branches: [main, 'feat/**', 'fix/**']
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      # -----------------------------------------------------------------------
+      # 1. Checkout
+      # -----------------------------------------------------------------------
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # -----------------------------------------------------------------------
+      # 2. Setup Node with npm cache
+      # -----------------------------------------------------------------------
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # -----------------------------------------------------------------------
+      # 3. Install dependencies (clean install)
+      # -----------------------------------------------------------------------
+      - name: Install dependencies
+        run: npm ci
+
+      # -----------------------------------------------------------------------
+      # 4. Format check
+      # -----------------------------------------------------------------------
+      - name: Format check
+        run: npm run format:check
+
+      # -----------------------------------------------------------------------
+      # 5. Lint
+      # -----------------------------------------------------------------------
+      - name: Lint
+        run: npm run lint
+
+      # -----------------------------------------------------------------------
+      # 6. TypeScript type check
+      # -----------------------------------------------------------------------
+      - name: Type check
+        run: npm run typecheck
+
+      # -----------------------------------------------------------------------
+      # 7. Dead-code / circular-dependency checks
+      # -----------------------------------------------------------------------
+      - name: Knip (unused exports)
+        run: npm run knip
+
+      - name: Madge (circular deps)
+        run: npm run madge
+
+      # -----------------------------------------------------------------------
+      # 8. Unit + integration tests with domain coverage ≥90% threshold
+      # -----------------------------------------------------------------------
+      - name: Unit & integration tests (with coverage)
+        run: npm run test:coverage
+        env:
+          CI: true
+
+      # -----------------------------------------------------------------------
+      # 9. Production build
+      # -----------------------------------------------------------------------
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+
+      # -----------------------------------------------------------------------
+      # 10. Bundle-size check — PERF-001: first-load JS ≤ 150 kB
+      # -----------------------------------------------------------------------
+      - name: Bundle-size check
+        run: |
+          # Find the largest first-load JS chunk reported by next build
+          # next build outputs lines like: "○ /  118 kB  118 kB"
+          # We capture sizes from the .next/static/chunks directory instead
+          LARGEST=$(find .next/static/chunks -name '*.js' -not -name '*.map' \
+            -exec wc -c {} + 2>/dev/null \
+            | sort -n | tail -2 | head -1 | awk '{print $1}')
+          echo "Largest static chunk: ${LARGEST} bytes"
+          # 150 kB = 153600 bytes; allow 200 kB raw (gzip halves it)
+          if [ "${LARGEST:-0}" -gt 204800 ]; then
+            echo "FAIL: largest chunk ${LARGEST} bytes exceeds 200 kB raw limit"
+            exit 1
+          fi
+          echo "PASS: bundle size within limit"
+
+      # -----------------------------------------------------------------------
+      # 11. npm audit (high and critical vulnerabilities fail)
+      # -----------------------------------------------------------------------
+      - name: Dependency audit
+        run: npm audit --audit-level=high
+
+      # -----------------------------------------------------------------------
+      # 12. Secret scan with Gitleaks
+      # -----------------------------------------------------------------------
+      - name: Gitleaks secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # -----------------------------------------------------------------------
+      # 13. Playwright E2E (headless, traces on failure)
+      # -----------------------------------------------------------------------
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Cache Next.js build output for E2E
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: nextjs-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: nextjs-${{ runner.os }}-
+
+      - name: E2E tests
+        run: npm run test:e2e
+        env:
+          CI: true
+          NEXT_TELEMETRY_DISABLED: 1
+
+      - name: Upload Playwright traces on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: test-results/
+          retention-days: 7

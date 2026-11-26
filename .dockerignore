@@ -1,0 +1,41 @@
+# Git
+.git
+.gitignore
+
+# Dependencies & Build Artefacts
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.next
+out
+dist
+build
+
+# Environment Secrets
+.env
+.env*.local
+.env.development
+.env.test
+.env.production
+!.env.example
+
+# Test & Coverage Artefacts
+coverage
+test-results
+playwright-report
+blob-report
+.nyc_output
+
+# Documentation & IDE
+docs
+.vscode
+.idea
+*.swp
+*.swo
+
+# Diagnostic Artefacts
+.baseline-*.json
+.after-*.json
+scripts/*.ts

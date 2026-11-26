@@ -3,8 +3,11 @@
 /.pnp
 .pnp.js
 
-# Testing
+# Testing & Playwright
 /coverage
+/test-results
+/playwright-report
+/blob-report
 
 # Next.js
 /.next/
@@ -28,3 +31,8 @@
 *.tsbuildinfo
 next-env.d.ts
 
+# Generated audit / performance / evidence outputs
+.after-*.json
+.baseline-*.json
+npm-audit.json
+evidence/
