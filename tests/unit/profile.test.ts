@@ -10,6 +10,7 @@ import {
   countVulnerabilityFlags,
   migrateProfile,
   migrateProfileV1ToV2,
+  migrateProfileV2ToV1,
 } from '../../src/domain/profile';
 
 describe('Profile Domain V1', () => {
@@ -99,5 +100,33 @@ describe('Profile Domain V2 & Migration (REQ-002)', () => {
     const v2 = migrateProfileV1ToV2({ nonsense: true });
     expect(v2.schemaVersion).toBe(2);
     expect(v2.budgetTier).toBe('zero_cost');
+  });
+
+  it('migrates v2 profile back to v1 across purifier, commute, and budget variants', () => {
+    const v1a = migrateProfileV2ToV1({
+      schemaVersion: 2,
+      vulnerabilities: ['kids', 'seniors', 'asthma'],
+      purifier: 'whole_home',
+      kitchenExhaust: false,
+      commuteMode: 'wfh',
+      commuteKm: 0,
+      budgetTier: 'paid_upgrades',
+    });
+    expect(v1a.hasPurifier).toBe(true);
+    expect(v1a.commuteTypes).toContain('work_from_home');
+    expect(v1a.budgetBand).toBe('medium');
+
+    const v1b = migrateProfileV2ToV1({
+      schemaVersion: 2,
+      vulnerabilities: ['none'],
+      purifier: 'none',
+      kitchenExhaust: true,
+      commuteMode: 'two_wheeler',
+      commuteKm: 12,
+      budgetTier: 'diy_2000',
+    });
+    expect(v1b.hasPurifier).toBe(false);
+    expect(v1b.budgetBand).toBe('low');
+    expect(v1b.commuteTypes).toContain('motorcycle');
   });
 });
