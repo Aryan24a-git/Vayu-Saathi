@@ -3,147 +3,142 @@
 > GenAI assistant for families and communities navigating severe winter smog.
 
 [![CI](https://github.com/your-org/clear-air-companion/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/clear-air-companion/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-## What It Does
+During severe winter smog (PM2.5 > 300 µg/m³), households in affected regions (such as the Indo-Gangetic Plain) face generic, unhelpful advice. Clear Air Companion solves this with three core actions:
 
-During severe winter smog (PM2.5 > 300 µg/m³), Clear Air Companion gives you a **personalized daily plan** — not generic advice. It:
+1. **Suggest**: Low-emission daily routines, indoor air quality hacks, and sustainable alternatives.
+2. **Tailor**: Customized to your live air quality, household members, housing type, and budget.
+3. **Explain**: Direct personal and community impact with honest uncertainty ranges, confidence levels, and citations.
 
-1. **Suggests** low-emission routines, indoor air quality hacks, sustainable alternatives
-2. **Tailors** recommendations to your location (live AQI), household members, housing, budget
-3. **Explains** the direct impact of each choice — with honest uncertainty ranges, sources, and confidence levels
+---
 
-## Quick Start
+## Architecture Diagram
+
+```mermaid
+flowchart TD
+    User["Household User (Browser)"]
+    SW["Service Worker (Offline Cache)"]
+    LS["Local Storage (Private Profile)"]
+
+    subgraph AppServer ["Next.js App Server (Standalone Node.js Runtime)"]
+        API["API Routes (/api/plan, /api/aqi, /api/ask)"]
+        Sec["Security & Rate Limiting (Token Bucket)"]
+        RulesEngine["Pure Domain Rules Engine (src/domain)"]
+        Catalog["Curated Action Catalog (28 entries)"]
+        Cache["LRU Cache + Request Coalescing"]
+        LLM["Grounded LLM Narrator (Optional)"]
+    end
+
+    subgraph Upstream ["Upstream Services"]
+        OpenMeteo["Open-Meteo API (Free, Keyless AQI & Geocoding)"]
+        Anthropic["Anthropic Messages API (Optional Key)"]
+    end
+
+    User <--> SW
+    User <--> LS
+    User <--> API
+    API --> Sec
+    Sec --> RulesEngine
+    RulesEngine --> Catalog
+    API --> Cache
+    Cache --> OpenMeteo
+    API -.-> LLM
+    LLM -.-> Anthropic
+```
+
+---
+
+## Quickstart
 
 ### Prerequisites
-
 - Node.js 20+
 - npm 10+
 
-### Setup
-
+### Local Setup
 ```bash
-# 1. Clone
+# 1. Clone repository
 git clone <repo-url>
 cd clear-air-companion
 
-# 2. Install dependencies
-npm install
+# 2. Install pinned dependencies
+npm ci
 
-# 3. Configure environment
+# 3. Setup environment configuration
 cp .env.example .env.local
-# Edit .env.local — see Configuration section below
 
-# 4. Run development server
+# 4. Start development server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000)
+Open [http://localhost:3000](http://localhost:3000).
 
-### Configuration
+---
 
-Copy `.env.example` and fill in values:
+## Zero-Key / No-Key Mode
+
+Clear Air Companion is **100% functional without an AI API key**.
+
+- If `ANTHROPIC_API_KEY` is omitted, the application uses its deterministic rules engine (`src/domain/plan.ts`).
+- Upstream air quality and geocoding rely on Open-Meteo's public API, which requires no API key.
+- If Open-Meteo is unreachable, users can enter a manual AQI value or city search.
+- Household profiles are saved in your browser's `localStorage` — **zero user data is persisted on the server**.
+
+---
+
+## How Impact Numbers Are Sourced
+
+Every action in Clear Air Companion's curated catalog (`src/catalog/catalog.json`) cites scientific evidence:
+
+- **Personal Exposure Reduction**: Sourced from peer-reviewed literature (WHO 2021 Global Air Quality Guidelines, EPA 2023 PM2.5 reviews, and Indian CPCB studies).
+- **Honest Uncertainty**: Impact is presented as ranges with stated confidence levels (e.g., *"30% to 50% indoor PM2.5 reduction; Moderate confidence"*).
+- **Community Scaling**: Community calculators project total emissions averted when 10, 50, or 500 households adopt an action, based on standard emission factors.
+
+---
+
+## Quality, Testing & Verification Commands
 
 ```bash
-# Required
-GEMINI_API_KEY=your-gemini-api-key-here
+# Complete quality gate (Format, Lint, Types, Dead code, Circular deps, Tests)
+npm run check
 
-# Optional (defaults shown)
-LLM_DAILY_TOKEN_BUDGET=1000000
-AQI_CACHE_TTL_MINUTES=15
-AQI_CACHE_MAX_ENTRIES=500
-LLM_CACHE_TTL_MINUTES=30
-LLM_CACHE_MAX_ENTRIES=100
-RATE_LIMIT_PLAN_PER_MINUTE=10
-RATE_LIMIT_AQI_PER_MINUTE=60
-NODE_ENV=development
+# Unit & integration tests with domain coverage report (threshold ≥ 90%)
+npm run test:coverage
+
+# Playwright E2E & automated WCAG 2.1 AA accessibility checks
+npm run test:e2e
+
+# Production build (standalone output, bundle check)
+npm run build
+
+# Automated production smoke test
+bash scripts/smoke.sh http://localhost:3000
+# On Windows:
+pwsh scripts/smoke.ps1 -BaseUrl http://localhost:3000
 ```
 
-The app starts without `GEMINI_API_KEY` and uses deterministic fallback plans.
+---
 
-## Development
+## Docker & Production Deployment
 
 ```bash
-npm run dev          # Development server (http://localhost:3000)
-npm run build        # Production build
-npm run start        # Start production build
-npm run lint         # ESLint + Prettier check
-npm run type-check   # TypeScript strict check
-npm run test         # All tests
-npm run test:unit    # Unit tests (domain core)
-npm run test:integration  # API integration tests (MSW)
-npm run test:ai      # LLM contract + guardrail tests
-npm run test:e2e     # Playwright E2E + axe
-npm run test:coverage # Coverage report (domain ≥ 90%)
+# Build multi-stage standalone container
+docker build -t clear-air-companion:v1.0.0 .
+
+# Run container (unprivileged nextjs user, port 3000)
+docker run -d -p 3000:3000 clear-air-companion:v1.0.0
 ```
 
-## Architecture
+See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) and [docs/RUNBOOK.md](docs/RUNBOOK.md) for full operational guides.
 
-```
-src/
-  app/              # Next.js App Router (pages + API routes)
-  domain/           # Pure functions: rules engine, AQI bands, impact model
-  lib/              # Providers, AI client, cache, logger, rate-limit
-  catalog/          # Curated action catalog (catalog.json)
-  components/       # React UI components
-  i18n/             # Externalized strings (English; i18n-ready)
-
-docs/
-  AGENTS.md         # 14-step agent contract (all V2 builds follow this)
-  ARCHITECTURE.md   # Module map, degradation matrix, security architecture
-  DOMAIN.md         # Domain rules D1–D6, AQI band table
-  REQUIREMENTS.md   # Full requirement registry (REQ/NFR/SEC/A11Y/PERF/...)
-  SECURITY.md       # Threat model and security controls
-  TESTING.md        # Test strategy and coverage targets
-  ACCESSIBILITY.md  # WCAG 2.1 AA checklist and implementation guide
-  TRACEABILITY.md   # EC → REQ → code mapping
-
-tests/
-  unit/             # Domain core tests (≥90% coverage target)
-  integration/      # API tests with MSW mocks
-  e2e/              # Playwright E2E + axe accessibility
-```
-
-See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full system design.
-
-## Key Design Decisions
-
-| Decision | Rationale |
-|----------|-----------|
-| No database | Privacy-first, hackathon scope, localStorage profile |
-| LLM grounding | Catalog prevents hallucinated advice (domain rule D6) |
-| Deterministic fallback | App fully usable when LLM/AQI unavailable |
-| Open-Meteo (keyless) | Free tier, no account needed for AQI + geocoding |
-| Coordinates rounded to 2dp | Privacy: ~1km precision, never stored server-side |
-
-## Data Sources
-
-| Data | Source | License |
-|------|--------|---------|
-| Air Quality (PM2.5, AQI) | [Open-Meteo](https://open-meteo.com/en/docs/air-quality-api) | CC BY 4.0 |
-| Geocoding | [Open-Meteo Geocoding](https://open-meteo.com/en/docs/geocoding-api) | CC BY 4.0 |
-| Impact Evidence | WHO 2021, EPA 2023, CPCB | Cited per action in catalog |
-| AI Narrative | Google Gemini (server-side) | — |
-
-## Personas
-
-| Persona | Key Need |
-|---------|----------|
-| P1: Urban parent | "What do I do today" for 2 kids (1 asthmatic), moderate budget |
-| P2: Multigenerational | Conservative guidance for elderly with heart/lung conditions |
-| P3: Community organiser | Shareable/printable plan, "what if 100 homes do this" |
-| P4: Low-resource household | Free actions, plain language, works on slow 3G |
-
-## Contributing
-
-1. Read `AGENTS.md` — the 14-step contract applies to all contributors
-2. Run `npm run lint && npm run type-check && npm run test` before committing
-3. Files must be < 250 lines, functions < 40 lines
-4. Every new action in the catalog requires a sourced impact evidence block
+---
 
 ## Disclaimer
 
-This app provides information only, not medical advice. During severe air pollution events, consult local health authorities. For breathing difficulties, chest pain, or other symptoms, seek immediate medical care.
+Clear Air Companion provides actionable environmental and lifestyle guidance, **not medical diagnosis or treatment**. Anyone experiencing acute breathing distress, chest pain, or severe symptoms should seek immediate medical attention.
+
+---
 
 ## License
 
-MIT
+MIT © 2026 Clear Air Companion Contributors

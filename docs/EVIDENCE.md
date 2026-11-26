@@ -37,6 +37,25 @@ This document provides the authoritative evidence base for all action catalog it
   - *Findings*: Documented nocturnal temperature inversions in the Indo-Gangetic Plain causing surface PM2.5 concentrations to peak between 06:00 and 10:00, with a relative minimum between 12:00 and 15:00.
   - *Used in*: `ACT-001`, `ACT-006`, `ACT-012`.
 
+- **National Air Quality Index (NAQI) Final Technical Report (2014, MoEFCC & IIT Kanpur)**
+  - *Standard*: Establishes India 6-band NAQI sub-index equations and pollutant breakpoints for PM2.5, PM10, NO2, SO2, CO, O3, NH3, and Pb.
+  - *Breakpoints (PM2.5)*: Good (0–30), Satisfactory (31–60), Moderately Polluted (61–90), Poor (91–120), Very Poor (121–250), Severe (251–380, capped at 500 max).
+  - *Used in*: `src/domain/naqi.ts`, `src/domain/scenarios.ts`.
+
+### 1.4 Berkeley Earth & Global Transport Emissions
+- **Muller & Rohde (2015) — Air Pollution and Cigarette Equivalence**
+  - *Findings*: Mathematical rule of thumb equating continuous 24-hour inhalation of ~22 µg/m³ of PM2.5 to the chronic cardiovascular/respiratory burden of 1 smoked cigarette.
+  - *Used in*: `src/domain/naqi.ts`, `src/domain/emissions.ts`, `src/features/hero/AqiHeroCard.tsx`.
+
+- **International Council on Clean Transportation (ICCT) India Light-Duty Vehicle Emissions (2020)**
+  - *Findings*: Urban petrol sedan average emission factor of 180 g CO2/km; two-wheelers 45 g CO2/km; electrified/CNG urban bus and metro transit grid factor ~25 g CO2/passenger-km.
+  - *Used in*: `src/domain/emissions.ts`, `src/domain/community.ts`.
+
+- **IPCC Guidelines for National Greenhouse Gas Inventories & US EPA**
+  - *Factor*: 2.31 kg CO2 emitted per litre of motor gasoline combusted.
+  - *Tree absorption*: European Environment Agency average estimate of ~22 kg CO2 absorbed per mature deciduous/evergreen urban tree per year.
+  - *Used in*: `src/domain/emissions.ts`.
+
 ---
 
 ## 2. Peer-Reviewed Literature
