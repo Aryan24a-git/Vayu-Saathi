@@ -8,9 +8,10 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   webServer: {
-    command: 'node .next/standalone/server.js',
+    command: 'npm run build && npm start',
     url: 'http://localhost:3000',
-    reuseExistingServer: true,
+    timeout: 180_000,
+    reuseExistingServer: !process.env.CI,
   },
   projects: [
     { name: 'desktop', use: { ...devices['Desktop Chrome'] } },

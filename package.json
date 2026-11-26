@@ -2,6 +2,9 @@
   "name": "clear-air-companion",
   "version": "1.0.0",
   "private": true,
+  "engines": {
+    "node": "24.x"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build && node scripts/copy-assets.mjs",
@@ -27,7 +30,6 @@
   },
   "dependencies": {
     "lucide-react": "^0.454.0",
-    "msw": "^2.15.0",
     "next": "^14.2.18",
     "pino": "^10.4.0",
     "react": "^18.3.1",
@@ -50,6 +52,7 @@
     "knip": "^6.48.0",
     "lighthouse": "^13.6.0",
     "madge": "^8.0.0",
+    "msw": "^2.15.0",
     "postcss": "^8.4.49",
     "prettier": "^3.10.1",
     "tailwindcss": "^3.4.15",

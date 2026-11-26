@@ -8,6 +8,8 @@ import { POST as planPost } from '../../src/app/api/plan/route';
 import { POST as askPost } from '../../src/app/api/ask/route';
 import { GET as healthGet } from '../../src/app/api/health/route';
 import { GET as readyGet } from '../../src/app/api/ready/route';
+import { GET as cityScenarioGet } from '../../src/app/api/city-scenario/route';
+import { clearGeocodingCache } from '../../src/server/providers/geocoding';
 import { openMeteoHandlers } from './msw/handlers';
 import { createDefaultProfile } from '../../src/domain/profile';
 import { clearAirQualityCaches } from '../../src/server/providers/openMeteoAirQuality';
@@ -158,5 +160,33 @@ describe('API boundary security', () => {
   it('returns health and config-only readiness', async () => {
     expect(healthGet().status).toBe(200);
     expect(readyGet(request('http://localhost/api/ready')).status).toBe(200);
+  });
+
+  it('city-scenario geocodes delhi live with MSW and returns isSynthetic: false', async () => {
+    clearGeocodingCache();
+    const response = await cityScenarioGet(
+      request('http://localhost/api/city-scenario?q=delhi', {
+        headers: { 'x-forwarded-for': '203.0.113.88' },
+      })
+    );
+    expect(response.status).toBe(200);
+    const body = (await response.json()) as { isSynthetic?: boolean; pm25?: number };
+    expect(body.isSynthetic).toBe(false);
+    expect(body.pm25).toBe(72);
+  });
+
+  it('city-scenario returns 502 on provider failure and never demo data', async () => {
+    clearGeocodingCache();
+    server.use(
+      http.get('https://air-quality-api.open-meteo.com/v1/air-quality', () =>
+        HttpResponse.json({ error: true }, { status: 500 })
+      )
+    );
+    const response = await cityScenarioGet(
+      request('http://localhost/api/city-scenario?q=lucknow', {
+        headers: { 'x-forwarded-for': '203.0.113.89' },
+      })
+    );
+    expect(response.status).toBe(502);
   });
 });

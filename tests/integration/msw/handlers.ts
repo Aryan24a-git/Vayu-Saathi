@@ -3,12 +3,26 @@ import { http, HttpResponse } from 'msw';
 export const openMeteoHandlers = [
   http.get('https://air-quality-api.open-meteo.com/v1/air-quality', () =>
     HttpResponse.json({
-      current: { time: '2026-11-22T13:00', pm2_5: 72, us_aqi: 175 },
+      current: {
+        time: '2026-11-22T13:00',
+        pm2_5: 72,
+        pm10: 140,
+        nitrogen_dioxide: 38,
+        us_aqi: 175,
+      },
       hourly: {
         time: ['2026-11-22T13:00', '2026-11-22T14:00'],
         pm2_5: [72, 68],
+        pm10: [140, 130],
+        nitrogen_dioxide: [38, 35],
         us_aqi: [175, 168],
       },
+    })
+  ),
+  http.get('https://api.open-meteo.com/v1/forecast', () =>
+    HttpResponse.json({
+      current: { wind_speed_10m: 6, temperature_2m: 19 },
+      hourly: { wind_speed_10m: [6, 7] },
     })
   ),
   http.get('https://geocoding-api.open-meteo.com/v1/search', () =>
