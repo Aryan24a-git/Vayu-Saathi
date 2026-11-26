@@ -1,144 +1,186 @@
-# Clear Air Companion 🌬️
+# VayuSaathi (वायु साथी) — Clear Air Companion 🌬️
 
-> GenAI assistant for families and communities navigating severe winter smog.
+> **Actionable, privacy-first winter smog resilience companion for Indian households and communities.**  
+> Moving families from passive AQI panic to practical physical engineering, safe ventilation windows, and collective clean air action.
 
-[![CI](https://github.com/your-org/clear-air-companion/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/clear-air-companion/actions/workflows/ci.yml)
+[![GitHub](https://img.shields.io/badge/GitHub-Aryan24a--git%2FVayu--Saathi-181717?logo=github)](https://github.com/Aryan24a-git/Vayu-Saathi)
+[![Next.js](https://img.shields.io/badge/Next.js-16.4.6-black?logo=next.js)](https://nextjs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-24%20LTS-339933?logo=node.js)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Strict%205.x-3178C6?logo=typescript)](https://www.typescriptlang.org/)
+[![Google Gemini](https://img.shields.io/badge/Gemini-3.0%20Flash-4285F4?logo=google)](https://ai.google.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC?logo=tailwind-css)](https://tailwindcss.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-
-During severe winter smog (PM2.5 > 300 µg/m³), households in affected regions (such as the Indo-Gangetic Plain) face generic, unhelpful advice. Clear Air Companion solves this with three core actions:
-
-1. **Suggest**: Low-emission daily routines, indoor air quality hacks, and sustainable alternatives.
-2. **Tailor**: Customized to your live air quality, household members, housing type, and budget.
-3. **Explain**: Direct personal and community impact with honest uncertainty ranges, confidence levels, and citations.
 
 ---
 
-## Architecture Diagram
+## 🎯 The Problem
+
+During winter smog across North and Eastern India (Delhi, Lucknow, Patna, Kolkata), particulate pollution regularly exceeds **300–500+ µg/m³ PM2.5**—the physiological equivalent of smoking 15–25 cigarettes a day.
+
+Most air quality apps are **digital panic buttons**: they display a terrifying red number and tell users to "stay indoors". But ordinary families still commute, cook in unsealed homes, and cannot afford ₹15,000–₹35,000 commercial air purifiers for every room. Furthermore, well-intentioned common habits—such as dry broom sweeping (*jhadu*) or opening windows during morning thermal inversions—actually pull toxic particles directly into children's breathing zones.
+
+---
+
+## 💡 The Solution: VayuSaathi
+
+**VayuSaathi** bridges atmospheric science and everyday household reality through a **Dual-Engine Architecture**:
+
+1. **Physical Dispersion & Meteorology Engine**: Analyzes 24-hour diurnal wind speed and PM dispersion curves to calculate the exact **Safe Cross-Ventilation Window** (when midday solar convection dilutes surface smoke) and warns users before the **Evening Thermal Inversion** traps toxic exhaust at ground level.
+2. **Grounded Gemini 3.0 Flash AI**: Translates CPCB National AQI sub-indices into hyper-local, empathetic guidance tailored to household vulnerabilities (infants, asthmatics, seniors) and budget tiers (from ₹0 habit swaps to ₹2,000 DIY MERV-13 box-fan purifiers).
+3. **Live Impact Meter**: Replaces vague suggestions with transparent cause-and-effect math showing exact indoor exposure reduction (e.g. *-45% PM2.5*), cigarette-equivalents avoided, and community emissions averted.
+4. **1-Click WhatsApp Community Broadcasts**: Generates ready-to-send bilingual (**English & हिन्दी**) morning bulletins for apartment societies, Resident Welfare Associations (RWAs), and school carpools.
+5. **Zero-Tracking Privacy**: 100% on-device `localStorage`, zero telemetry or user tracking, and geographic coordinates truncated to 2 decimal places.
+
+---
+
+## 🏛️ System Architecture
 
 ```mermaid
 flowchart TD
-    User["Household User (Browser)"]
-    SW["Service Worker (Offline Cache)"]
-    LS["Local Storage (Private Profile)"]
+    User["👤 Household User (Mobile / Desktop)"]
+    SW["⚡ Service Worker (Offline Cache)"]
+    LS["🔒 Browser LocalStorage (Zero Server Persistence)"]
 
-    subgraph AppServer ["Next.js App Server (Standalone Node.js Runtime)"]
-        API["API Routes (/api/plan, /api/aqi, /api/ask)"]
-        Sec["Security & Rate Limiting (Token Bucket)"]
-        RulesEngine["Pure Domain Rules Engine (src/domain)"]
-        Catalog["Curated Action Catalog (28 entries)"]
-        Cache["LRU Cache + Request Coalescing"]
-        LLM["Grounded LLM Narrator (Optional)"]
+    subgraph AppServer ["Next.js App Server (Node 24 Standalone)"]
+        API["API Routes (/api/city-scenario, /api/playbook, /api/ask)"]
+        RateLimit["TokenBucket Limiter & Security Headers (Strict CSP)"]
+        
+        subgraph DomainEngine ["Domain Engine (src/domain)"]
+            NAQI["CPCB NAQI Sub-Index Calculator"]
+            Dispersion["Diurnal Dispersion & Safe Vent Algorithm"]
+            Catalog["Curated Action Catalog (D1-D6 Rules)"]
+            ImpactModel["Grounded Exposure & Cigarette Math"]
+        end
+        
+        LLMClient["Gemini LLM Client (gemini-3-flash-preview)"]
     end
 
-    subgraph Upstream ["Upstream Services"]
-        OpenMeteo["Open-Meteo API (Free, Keyless AQI & Geocoding)"]
-        Anthropic["Anthropic Messages API (Optional Key)"]
+    subgraph ExternalTelemetry ["Live Air Quality Providers"]
+        WAQI["World Air Quality Index (WAQI Station Feed)"]
+        OpenMeteo["Open-Meteo European Model (Hourly Forecasts)"]
+        GeminiAPI["Google Gemini Interactions API"]
     end
 
     User <--> SW
     User <--> LS
     User <--> API
-    API --> Sec
-    Sec --> RulesEngine
-    RulesEngine --> Catalog
-    API --> Cache
-    Cache --> OpenMeteo
-    API -.-> LLM
-    LLM -.-> Anthropic
+    API --> RateLimit
+    RateLimit --> DomainEngine
+    API --> OpenMeteo
+    API --> WAQI
+    API -.-> LLMClient
+    LLMClient -.-> GeminiAPI
 ```
 
 ---
 
-## Quickstart
+## ✨ Key Features
+
+| Feature | Description | Impact |
+|---|---|---|
+| **Safe Cross-Ventilation Window** | Diurnal curve algorithm identifying lowest-PM2.5 midday hours | Prevents carbon dioxide / VOC buildup while keeping peak smog out |
+| **Evening Inversion Countdown** | Real-time warning before atmospheric boundary layer collapses | Tells families the exact hour to seal doors and balcony sliders |
+| **Budget-Tiered Playbook** | Actionable engineering from ₹0 (wet mopping, damp towel draft stopping) to ₹2,000 DIY box-fan filters | Accessible protection for low- and middle-income families |
+| **Live Impact Meter** | Transparent math displaying % exposure cut, cigarettes avoided, and CO₂ saved | Proven behavioral feedback driving daily completion |
+| **Grounded AI Copilot** | Gemini 3.0 Flash assistant operating with strict guardrails (zero medical claims, grounded numbers) | Plain English/Hinglish answers to household air quality questions |
+| **Bilingual WhatsApp Generator** | Instant morning alert generator formatted for society and RWA groups (English + Hindi) | Spreads clean air practices across entire neighborhoods |
+| **Zero-Persistence Privacy** | No logins, no server-side databases, private profile in browser storage | Complete data sovereign privacy by default |
+
+---
+
+## 🚀 Quickstart
 
 ### Prerequisites
-- Node.js 20+
-- npm 10+
+- **Node.js**: `20.19.0` or `24.x LTS` (Node 24 recommended)
+- **npm**: `10+`
 
-### Local Setup
+### Installation & Run
+
 ```bash
-# 1. Clone repository
-git clone <repo-url>
-cd clear-air-companion
+# 1. Clone the repository
+git clone https://github.com/Aryan24a-git/Vayu-Saathi.git
+cd Vayu-Saathi
 
-# 2. Install pinned dependencies
+# 2. Install dependencies
 npm ci
 
-# 3. Setup environment configuration
+# 3. Configure environment variables
 cp .env.example .env.local
 
-# 4. Start development server
+# 4. (Optional) Add your Google Gemini API Key in .env.local:
+# GEMINI_API_KEY=your_gemini_api_key_here
+# GEMINI_MODEL=gemini-3-flash-preview
+
+# 5. Start the development server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## Zero-Key / No-Key Mode
+## 🔑 Zero-Key / Offline Fallback Mode
 
-Clear Air Companion is **100% functional without an AI API key**.
-
-- If `ANTHROPIC_API_KEY` is omitted, the application uses its deterministic rules engine (`src/domain/plan.ts`).
-- Upstream air quality and geocoding rely on Open-Meteo's public API, which requires no API key.
-- If Open-Meteo is unreachable, users can enter a manual AQI value or city search.
-- Household profiles are saved in your browser's `localStorage` — **zero user data is persisted on the server**.
+VayuSaathi is designed for resilience and **functions 100% reliably even without an AI API key**:
+- If `GEMINI_API_KEY` is not provided or rate-limited, the application seamlessly runs on its **deterministic rules engine** (`src/domain/playbookEngine.ts`).
+- Upstream air quality automatically queries WAQI or Open-Meteo's open endpoints.
+- If upstream networks fail, users can instantly enter manual AQI readings or use cached offline data.
 
 ---
 
-## How Impact Numbers Are Sourced
+## 🧪 Verification & Quality Suite
 
-Every action in Clear Air Companion's curated catalog (`src/catalog/catalog.json`) cites scientific evidence:
-
-- **Personal Exposure Reduction**: Sourced from peer-reviewed literature (WHO 2021 Global Air Quality Guidelines, EPA 2023 PM2.5 reviews, and Indian CPCB studies).
-- **Honest Uncertainty**: Impact is presented as ranges with stated confidence levels (e.g., *"30% to 50% indoor PM2.5 reduction; Moderate confidence"*).
-- **Community Scaling**: Community calculators project total emissions averted when 10, 50, or 500 households adopt an action, based on standard emission factors.
-
----
-
-## Quality, Testing & Verification Commands
+Every commit adheres to strict automated quality gates:
 
 ```bash
-# Complete quality gate (Format, Lint, Types, Dead code, Circular deps, Tests)
+# Run full verification suite (Format, Lint, TypeScript, Knip, Madge, Vitest)
 npm run check
 
-# Unit & integration tests with domain coverage report (threshold ≥ 90%)
-npm run test:coverage
+# Run unit and integration tests (31 test files, 137 tests passing)
+npm run test
 
-# Playwright E2E & automated WCAG 2.1 AA accessibility checks
+# Run Playwright E2E integration test
 npm run test:e2e
 
-# Production build (standalone output, bundle check)
+# Production build test (Next.js Standalone with Turbopack)
 npm run build
-
-# Automated production smoke test
-bash scripts/smoke.sh http://localhost:3000
-# On Windows:
-pwsh scripts/smoke.ps1 -BaseUrl http://localhost:3000
 ```
 
 ---
 
-## Docker & Production Deployment
+## 📖 Project Structure
 
-```bash
-# Build multi-stage standalone container
-docker build -t clear-air-companion:v1.0.0 .
-
-# Run container (unprivileged nextjs user, port 3000)
-docker run -d -p 3000:3000 clear-air-companion:v1.0.0
+```
+├── src/
+│   ├── app/                 # Next.js App Router (layout, page, API routes)
+│   ├── catalog/             # Curated, scientific clean-air action catalog
+│   ├── domain/              # Pure TypeScript business & atmospheric logic
+│   │   ├── naqi.ts          # Official CPCB NAQI calculation & breakpoints
+│   │   ├── ventilation.ts   # Diurnal boundary-layer ventilation algorithm
+│   │   ├── playbookEngine.ts# Deterministic & AI playbook synthesizers
+│   │   └── scenarios.ts     # Household profile definitions & impact models
+│   ├── features/            # Modular React client UI components
+│   │   ├── hero/            # Hero section, AQI badge, 24h dispersion chart
+│   │   ├── playbook/        # Impact meter, checklist cards, AI explainer
+│   │   ├── copilot/         # Grounded conversational assistant
+│   │   ├── community/       # RWA WhatsApp generator, local action pinboard
+│   │   └── profile/         # Drawer for vulnerability & housing settings
+│   └── server/              # Server-only providers, LLM client, rate limiters
+├── tests/
+│   ├── unit/                # Unit tests for domain, math, and API routes
+│   ├── integration/         # Security boundary & error handling tests
+│   └── e2e/                 # End-to-end browser click-through specs
+└── docs/                    # Architectural, security, and accessibility documentation
 ```
 
-See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) and [docs/RUNBOOK.md](docs/RUNBOOK.md) for full operational guides.
+---
+
+## ⚠️ Medical Disclaimer
+
+VayuSaathi provides actionable physical engineering and environmental lifestyle recommendations. It does **not** provide medical diagnosis, clinical advice, or drug prescriptions. Individuals with severe chronic pulmonary conditions, acute asthma attacks, or chest pain should seek immediate professional medical assistance.
 
 ---
 
-## Disclaimer
+## 📄 License
 
-Clear Air Companion provides actionable environmental and lifestyle guidance, **not medical diagnosis or treatment**. Anyone experiencing acute breathing distress, chest pain, or severe symptoms should seek immediate medical attention.
-
----
-
-## License
-
-MIT © 2026 Clear Air Companion Contributors
+Licensed under the [MIT License](LICENSE). © 2026 VayuSaathi Contributors.

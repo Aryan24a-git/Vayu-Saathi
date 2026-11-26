@@ -36,3 +36,5 @@ next-env.d.ts
 .baseline-*.json
 npm-audit.json
 evidence/
+memory.md
+TRIAGE.md
