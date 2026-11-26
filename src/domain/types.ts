@@ -97,6 +97,8 @@ export const AirQualitySnapshotSchema = z.object({
   pm25: z.number().min(0).max(1500),
   timestamp: z.string().datetime(),
   provider: z.string().min(1),
+  band: z.string().min(1).optional(),
+  hourlyPm25: z.array(z.number().nullable()).optional(),
   isStale: z.boolean(),
   isFallback: z.boolean(),
 });

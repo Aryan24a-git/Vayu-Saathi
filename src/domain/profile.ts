@@ -3,7 +3,7 @@
 
 import { z } from 'zod';
 
-// ─── Enums ────────────────────────────────────────────────────────────────────
+// ─── Enums (V1 Legacy) ────────────────────────────────────────────────────────
 
 export const BudgetBandSchema = z.enum(['none', 'low', 'medium', 'high']);
 export type BudgetBand = z.infer<typeof BudgetBandSchema>;
@@ -56,15 +56,7 @@ export const VulnerabilityFlagSchema = z.enum([
 ]);
 export type VulnerabilityFlag = z.infer<typeof VulnerabilityFlagSchema>;
 
-// ─── Household Member ─────────────────────────────────────────────────────────
-
-export const AgeBandSchema = z.enum([
-  'infant', // 0–2
-  'child', // 3–12
-  'teen', // 13–17
-  'adult', // 18–64
-  'elderly', // 65+
-]);
+export const AgeBandSchema = z.enum(['infant', 'child', 'teen', 'adult', 'elderly']);
 export type AgeBand = z.infer<typeof AgeBandSchema>;
 
 export const HouseholdMemberSchema = z.object({
@@ -73,7 +65,7 @@ export const HouseholdMemberSchema = z.object({
 });
 export type HouseholdMember = z.infer<typeof HouseholdMemberSchema>;
 
-// ─── Profile ──────────────────────────────────────────────────────────────────
+// ─── Profile V1 ───────────────────────────────────────────────────────────────
 
 export const PROFILE_SCHEMA_VERSION = 1;
 
@@ -91,31 +83,113 @@ export const ProfileSchema = z.object({
 });
 export type Profile = z.infer<typeof ProfileSchema>;
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// ─── Profile V2 (CR-01 / REQ-002) ─────────────────────────────────────────────
 
-/** Returns all unique vulnerability flags across all household members */
+export const VulnerabilityV2Schema = z.enum(['kids', 'seniors', 'asthma', 'none']);
+export type VulnerabilityV2 = z.infer<typeof VulnerabilityV2Schema>;
+
+export const PurifierV2Schema = z.enum(['none', 'one_room', 'whole_home']);
+export type PurifierV2 = z.infer<typeof PurifierV2Schema>;
+
+export const CommuteModeV2Schema = z.enum(['solo_car', 'two_wheeler', 'public_transit', 'wfh']);
+export type CommuteModeV2 = z.infer<typeof CommuteModeV2Schema>;
+
+export const BudgetTierV2Schema = z.enum(['zero_cost', 'diy_2000', 'paid_upgrades']);
+export type BudgetTierV2 = z.infer<typeof BudgetTierV2Schema>;
+
+export const ProfileV2Schema = z.object({
+  schemaVersion: z.literal(2).default(2),
+  vulnerabilities: z
+    .array(VulnerabilityV2Schema)
+    .min(1)
+    .max(4)
+    .refine((arr) => !arr.includes('none') || arr.length === 1, {
+      message: "'none' cannot be combined with specific vulnerabilities",
+    }),
+  purifier: PurifierV2Schema,
+  kitchenExhaust: z.boolean(),
+  commuteMode: CommuteModeV2Schema,
+  commuteKm: z.number().int().min(1).max(100),
+  budgetTier: BudgetTierV2Schema,
+  createdAt: z.string().datetime().optional(),
+  updatedAt: z.string().datetime().optional(),
+});
+export type ProfileV2 = z.infer<typeof ProfileV2Schema>;
+
+export function createDefaultProfileV2(): ProfileV2 {
+  return {
+    schemaVersion: 2,
+    vulnerabilities: ['kids', 'seniors'],
+    purifier: 'none',
+    kitchenExhaust: true,
+    commuteMode: 'solo_car',
+    commuteKm: 16,
+    budgetTier: 'zero_cost',
+  };
+}
+
+export function migrateProfileV1ToV2(raw: unknown): ProfileV2 {
+  const direct = ProfileV2Schema.safeParse(raw);
+  if (direct.success) return direct.data;
+
+  const v1 = ProfileSchema.safeParse(raw);
+  if (v1.success) {
+    const data = v1.data;
+    const vulns: VulnerabilityV2[] = [];
+    if (data.members.some((m) => m.ageBand === 'infant' || m.ageBand === 'child'))
+      vulns.push('kids');
+    if (data.members.some((m) => m.ageBand === 'elderly')) vulns.push('seniors');
+    if (
+      data.members.some(
+        (m) =>
+          m.vulnerabilityFlags.includes('asthma') || m.vulnerabilityFlags.includes('lung_disease')
+      )
+    ) {
+      vulns.push('asthma');
+    }
+    const finalVulns = vulns.length > 0 ? vulns : (['none'] as VulnerabilityV2[]);
+
+    let commuteMode: CommuteModeV2 = 'solo_car';
+    if (data.commuteTypes.includes('work_from_home')) commuteMode = 'wfh';
+    else if (data.commuteTypes.includes('bus') || data.commuteTypes.includes('metro'))
+      commuteMode = 'public_transit';
+    else if (data.commuteTypes.includes('motorcycle')) commuteMode = 'two_wheeler';
+
+    let budgetTier: BudgetTierV2 = 'zero_cost';
+    if (data.budgetBand === 'medium' || data.budgetBand === 'high') budgetTier = 'paid_upgrades';
+    else if (data.budgetBand === 'low') budgetTier = 'diy_2000';
+
+    return {
+      schemaVersion: 2,
+      vulnerabilities: finalVulns,
+      purifier: data.hasPurifier ? 'one_room' : 'none',
+      kitchenExhaust: data.cookingFuel === 'electric' || data.cookingFuel === 'induction',
+      commuteMode,
+      commuteKm: 16,
+      budgetTier,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
+    };
+  }
+
+  return createDefaultProfileV2();
+}
+
+// ─── Helpers (V1 Compatibility) ──────────────────────────────────────────────
+
 export function getAllVulnerabilityFlags(profile: Profile): Set<VulnerabilityFlag> {
   const flags = new Set<VulnerabilityFlag>();
   for (const member of profile.members) {
-    for (const flag of member.vulnerabilityFlags) {
-      flags.add(flag);
-    }
+    for (const flag of member.vulnerabilityFlags) flags.add(flag);
   }
-  // Infer elderly flag from age band
-  if (profile.members.some((m) => m.ageBand === 'elderly')) {
-    flags.add('elderly');
-  }
-  // Infer infant flag
-  if (profile.members.some((m) => m.ageBand === 'infant')) {
-    flags.add('infant');
-  }
+  if (profile.members.some((m) => m.ageBand === 'elderly')) flags.add('elderly');
+  if (profile.members.some((m) => m.ageBand === 'infant')) flags.add('infant');
   return flags;
 }
 
-/** Returns true if the profile has any vulnerability that triggers early escalation */
 export function hasEarlyEscalationVulnerability(profile: Profile): boolean {
   const flags = getAllVulnerabilityFlags(profile);
-  const earlyEscalationFlags: VulnerabilityFlag[] = [
+  const early: VulnerabilityFlag[] = [
     'asthma',
     'heart_disease',
     'lung_disease',
@@ -123,22 +197,57 @@ export function hasEarlyEscalationVulnerability(profile: Profile): boolean {
     'infant',
     'pregnant',
   ];
-  return earlyEscalationFlags.some((f) => flags.has(f));
+  return early.some((f) => flags.has(f));
 }
 
-/** Count vulnerability flags for compounding escalation */
 export function countVulnerabilityFlags(profile: Profile): number {
   return getAllVulnerabilityFlags(profile).size;
 }
 
-/** Safe profile migration: upgrades from older schema versions */
+export function migrateProfileV2ToV1(data: ProfileV2): Profile {
+  const members: HouseholdMember[] = [];
+  if (data.vulnerabilities.includes('kids'))
+    members.push({ ageBand: 'child', vulnerabilityFlags: [] });
+  if (data.vulnerabilities.includes('seniors'))
+    members.push({ ageBand: 'elderly', vulnerabilityFlags: ['elderly'] });
+  if (data.vulnerabilities.includes('asthma'))
+    members.push({ ageBand: 'adult', vulnerabilityFlags: ['asthma'] });
+  if (members.length === 0) members.push({ ageBand: 'adult', vulnerabilityFlags: [] });
+
+  const bMap: Record<BudgetTierV2, BudgetBand> = {
+    zero_cost: 'none',
+    diy_2000: 'low',
+    paid_upgrades: 'medium',
+  };
+  const cMap: Record<CommuteModeV2, CommuteType[]> = {
+    wfh: ['work_from_home'],
+    public_transit: ['metro', 'bus'],
+    two_wheeler: ['motorcycle'],
+    solo_car: ['car_petrol'],
+  };
+
+  return {
+    schemaVersion: 1,
+    members,
+    housingType: 'average',
+    hasPurifier: data.purifier !== 'none',
+    cookingFuel: data.kitchenExhaust ? 'electric' : 'lpg',
+    heatingType: 'none',
+    commuteTypes: cMap[data.commuteMode] ?? ['car_petrol'],
+    budgetBand: bMap[data.budgetTier] ?? 'low',
+    createdAt: data.createdAt,
+    updatedAt: data.updatedAt,
+  };
+}
+
 export function migrateProfile(raw: unknown): Profile | null {
-  const result = ProfileSchema.safeParse(raw);
-  if (result.success) return result.data;
+  const v1 = ProfileSchema.safeParse(raw);
+  if (v1.success) return v1.data;
+  const v2 = ProfileV2Schema.safeParse(raw);
+  if (v2.success) return migrateProfileV2ToV1(v2.data);
   return null;
 }
 
-/** Create a default profile for first-time users */
 export function createDefaultProfile(): Profile {
   return {
     schemaVersion: PROFILE_SCHEMA_VERSION,

@@ -108,7 +108,8 @@ export function assemblePlan(
   profile: Profile,
   effectiveBand: AqiBand,
   escalationLevel: number,
-  catalog: readonly Action[]
+  catalog: readonly Action[],
+  now: Date = new Date()
 ): Plan {
   const profileFlags = getAllVulnerabilityFlags(profile);
 
@@ -159,7 +160,7 @@ export function assemblePlan(
       isEmergencyCondition(escalationLevel) ||
       (isHighRiskCondition(escalationLevel) && profileFlags.size > 0),
     medicalDisclaimer: MEDICAL_DISCLAIMER,
-    generatedAt: new Date().toISOString(),
+    generatedAt: now.toISOString(),
     isFallback: false,
   };
 }
