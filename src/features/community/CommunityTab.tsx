@@ -19,6 +19,7 @@ interface CommunityTabProps {
   upvotedIds: string[];
   onAddHotspot: (report: HotspotReport) => void;
   onToggleUpvote: (id: string) => void;
+  onRemoveHotspot: (id: string) => void;
 }
 
 export function CommunityTab({
@@ -32,6 +33,7 @@ export function CommunityTab({
   upvotedIds,
   onAddHotspot,
   onToggleUpvote,
+  onRemoveHotspot,
 }: CommunityTabProps) {
   const totalPledges = completedPledgesCount;
   const totalCo2 = Number(userCo2Kg.toFixed(2));
@@ -94,6 +96,7 @@ export function CommunityTab({
         upvotedIds={upvotedIds}
         onAddHotspot={onAddHotspot}
         onToggleUpvote={onToggleUpvote}
+        onRemoveHotspot={onRemoveHotspot}
       />
     </section>
   );

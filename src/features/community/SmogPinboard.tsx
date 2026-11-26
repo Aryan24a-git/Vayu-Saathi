@@ -15,6 +15,7 @@ interface SmogPinboardProps {
   upvotedIds: string[];
   onAddHotspot: (report: HotspotReport) => void;
   onToggleUpvote: (id: string) => void;
+  onRemoveHotspot: (id: string) => void;
 }
 
 export function SmogPinboard({
@@ -23,6 +24,7 @@ export function SmogPinboard({
   upvotedIds,
   onAddHotspot,
   onToggleUpvote,
+  onRemoveHotspot,
 }: SmogPinboardProps) {
   const { showToast } = useToast();
   const [category, setCategory] = useState<HotspotReport['category']>('Open Waste Burning');
@@ -100,6 +102,7 @@ export function SmogPinboard({
                   item={item}
                   isUpvoted={upvotedIds.includes(item.id)}
                   onToggleUpvote={onToggleUpvote}
+                  onRemove={onRemoveHotspot}
                 />
               ))}
             </div>

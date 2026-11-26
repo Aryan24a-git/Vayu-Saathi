@@ -1,5 +1,5 @@
 import React from 'react';
-import { Megaphone, MapPin, ArrowBigUp, PlusCircle } from 'lucide-react';
+import { Megaphone, MapPin, ArrowBigUp, PlusCircle, X } from 'lucide-react';
 import type { HotspotReport } from './hotspotTypes';
 
 interface HotspotFormProps {
@@ -98,9 +98,10 @@ interface HotspotCardProps {
   item: HotspotReport;
   isUpvoted: boolean;
   onToggleUpvote: (id: string) => void;
+  onRemove: (id: string) => void;
 }
 
-export function HotspotCard({ item, isUpvoted, onToggleUpvote }: HotspotCardProps) {
+export function HotspotCard({ item, isUpvoted, onToggleUpvote, onRemove }: HotspotCardProps) {
   return (
     <article className="rounded-2xl border border-stone-200 bg-white p-4 flex flex-col justify-between gap-3 hover:border-stone-300 transition">
       <div>
@@ -117,7 +118,17 @@ export function HotspotCard({ item, isUpvoted, onToggleUpvote }: HotspotCardProp
               </span>
             )}
           </div>
-          <span className="text-[11px] text-slate-600 font-medium">{item.timeAgo}</span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] text-slate-600 font-medium">{item.timeAgo}</span>
+            <button
+              type="button"
+              aria-label="Remove report"
+              onClick={() => onRemove(item.id)}
+              className="p-0.5 rounded-full text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
         <h5 className="font-bold text-sm text-slate-900">{item.locality}</h5>
         <p className="text-xs text-slate-600 mt-1 leading-relaxed">{item.description}</p>

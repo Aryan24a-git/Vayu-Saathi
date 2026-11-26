@@ -183,6 +183,19 @@ export function useVayuSaathi() {
     }
   };
 
+  const removeHotspot = (id: string) => {
+    const next = hotspots.filter((h) => h.id !== id);
+    setHotspots(next);
+    const nextUpvotes = upvotedIds.filter((x) => x !== id);
+    setUpvotedIds(nextUpvotes);
+    try {
+      localStorage.setItem(STORAGE.hotspots, JSON.stringify(next));
+      localStorage.setItem(STORAGE.upvotes, JSON.stringify(nextUpvotes));
+    } catch {
+      // ignore
+    }
+  };
+
   const clearAllData = () => {
     try {
       Object.values(STORAGE).forEach((k) => localStorage.removeItem(k));
@@ -232,6 +245,7 @@ export function useVayuSaathi() {
     togglePledge,
     toggleUpvote,
     addHotspot,
+    removeHotspot,
     initGreeting,
     setAiPlaybook,
     clearAllData,

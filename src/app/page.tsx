@@ -206,6 +206,7 @@ function VayuSaathiApp() {
                 upvotedIds={state.upvotedIds}
                 onAddHotspot={state.addHotspot}
                 onToggleUpvote={state.toggleUpvote}
+                onRemoveHotspot={state.removeHotspot}
               />
             )}
           </>
