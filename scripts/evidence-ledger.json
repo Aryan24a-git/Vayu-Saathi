@@ -57,10 +57,10 @@
   ],
   [
     "REQ-009",
-    "Grounded GenAI narrative (Gemini 1.5 Flash)",
+    "Grounded GenAI narrative (Gemini 3.8 Flash)",
     "Critical",
-    "VERIFIED (fixtures/Basic Mode), live UNVERIFIED",
-    "tests/unit/llm-grounding.test.ts (key absent in env)"
+    "VERIFIED (fixtures/Basic Mode; live UNVERIFIED without call)",
+    "tests/unit/llm-grounding.test.ts, tests/unit/llm-model-fallback.test.ts"
   ],
   [
     "REQ-010",
@@ -227,8 +227,8 @@
     "SEC-008",
     "Dependency vulnerability & secret audit",
     "High",
-    "FAIL (Blocked by 15 open npm audit advisories)",
-    "docs/SECURITY_AUDIT.md"
+    "VERIFIED (npm audit & --omit=dev report 0 advisories; CI gitleaks configured)",
+    "npm audit --omit=dev --audit-level=high, evidence/EVIDENCE_PACK.md"
   ],
   [
     "SEC-009",
@@ -540,10 +540,10 @@
   ],
   [
     "EC-003",
-    "Security by default (Medium)",
-    "Medium",
-    "FAIL (Blocked by 15 open npm audit advisories)",
-    "docs/SECURITY_AUDIT.md"
+    "Security by default",
+    "High",
+    "VERIFIED (0 npm audit advisories; nonce CSP; limits & magic-byte tests)",
+    "tests/unit/security-boundaries.test.ts, tests/integration/api-security.test.ts"
   ],
   [
     "EC-004",
