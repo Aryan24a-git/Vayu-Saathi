@@ -11,8 +11,8 @@ describe('Server Environment Configuration', () => {
     const env = validateEnv(raw);
     expect(env.NODE_ENV).toBe('test');
     expect(env.RATE_LIMIT_PLAN).toBe(10);
-    expect(env.ANTHROPIC_API_KEY).toBeUndefined();
     expect(env.GEMINI_API_KEY).toBeUndefined();
+    expect(env.GEMINI_MODEL).toBe('gemini-1.5-flash');
   });
 
   it('fails fast on invalid values with clear diagnostics', () => {
@@ -24,11 +24,13 @@ describe('Server Environment Configuration', () => {
 
   it('correctly accepts optional LLM keys', () => {
     const raw = {
-      ANTHROPIC_API_KEY: 'sk-ant-test-key',
+      GEMINI_API_KEY: 'test-gemini-key',
+      GEMINI_MODEL: 'gemini-1.5-pro',
       LLM_DAILY_CALL_CAP: '500',
     };
     const env = validateEnv(raw);
-    expect(env.ANTHROPIC_API_KEY).toBe('sk-ant-test-key');
+    expect(env.GEMINI_API_KEY).toBe('test-gemini-key');
+    expect(env.GEMINI_MODEL).toBe('gemini-1.5-pro');
     expect(env.LLM_DAILY_CALL_CAP).toBe(500);
   });
 });

@@ -8,6 +8,12 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       include: ['src/domain/**/*.ts'],
+      thresholds: {
+        lines: 90,
+        functions: 90,
+        branches: 70,
+        statements: 90,
+      },
     },
   },
   resolve: {

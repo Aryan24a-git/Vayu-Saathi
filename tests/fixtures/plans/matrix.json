@@ -1,0 +1,818 @@
+{
+  "cases": [
+    {
+      "band": "good",
+      "aqi": 30,
+      "pm25": 8,
+      "sensitive": false,
+      "budget": "none",
+      "actionIds": ["ACT-015", "ACT-001", "ACT-004", "ACT-007", "ACT-028", "ACT-023"]
+    },
+    {
+      "band": "good",
+      "aqi": 30,
+      "pm25": 8,
+      "sensitive": false,
+      "budget": "low",
+      "actionIds": [
+        "ACT-015",
+        "ACT-001",
+        "ACT-004",
+        "ACT-007",
+        "ACT-025",
+        "ACT-017",
+        "ACT-028",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "good",
+      "aqi": 30,
+      "pm25": 8,
+      "sensitive": false,
+      "budget": "medium",
+      "actionIds": [
+        "ACT-015",
+        "ACT-001",
+        "ACT-004",
+        "ACT-007",
+        "ACT-025",
+        "ACT-017",
+        "ACT-028",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "good",
+      "aqi": 30,
+      "pm25": 8,
+      "sensitive": true,
+      "budget": "none",
+      "actionIds": [
+        "ACT-015",
+        "ACT-003",
+        "ACT-001",
+        "ACT-004",
+        "ACT-007",
+        "ACT-009",
+        "ACT-028",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "good",
+      "aqi": 30,
+      "pm25": 8,
+      "sensitive": true,
+      "budget": "low",
+      "actionIds": [
+        "ACT-015",
+        "ACT-003",
+        "ACT-001",
+        "ACT-004",
+        "ACT-007",
+        "ACT-009",
+        "ACT-025",
+        "ACT-017",
+        "ACT-028",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "good",
+      "aqi": 30,
+      "pm25": 8,
+      "sensitive": true,
+      "budget": "medium",
+      "actionIds": [
+        "ACT-015",
+        "ACT-003",
+        "ACT-001",
+        "ACT-004",
+        "ACT-007",
+        "ACT-009",
+        "ACT-025",
+        "ACT-017",
+        "ACT-028",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "moderate",
+      "aqi": 75,
+      "pm25": 20,
+      "sensitive": false,
+      "budget": "none",
+      "actionIds": [
+        "ACT-015",
+        "ACT-003",
+        "ACT-001",
+        "ACT-004",
+        "ACT-007",
+        "ACT-009",
+        "ACT-028",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "moderate",
+      "aqi": 75,
+      "pm25": 20,
+      "sensitive": false,
+      "budget": "low",
+      "actionIds": [
+        "ACT-015",
+        "ACT-003",
+        "ACT-001",
+        "ACT-004",
+        "ACT-007",
+        "ACT-009",
+        "ACT-025",
+        "ACT-017",
+        "ACT-028",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "moderate",
+      "aqi": 75,
+      "pm25": 20,
+      "sensitive": false,
+      "budget": "medium",
+      "actionIds": [
+        "ACT-015",
+        "ACT-003",
+        "ACT-001",
+        "ACT-004",
+        "ACT-007",
+        "ACT-009",
+        "ACT-025",
+        "ACT-017",
+        "ACT-028",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "moderate",
+      "aqi": 75,
+      "pm25": 20,
+      "sensitive": true,
+      "budget": "none",
+      "actionIds": [
+        "ACT-015",
+        "ACT-002",
+        "ACT-003",
+        "ACT-001",
+        "ACT-004",
+        "ACT-007",
+        "ACT-009",
+        "ACT-028",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "moderate",
+      "aqi": 75,
+      "pm25": 20,
+      "sensitive": true,
+      "budget": "low",
+      "actionIds": [
+        "ACT-015",
+        "ACT-002",
+        "ACT-003",
+        "ACT-001",
+        "ACT-004",
+        "ACT-007",
+        "ACT-009",
+        "ACT-025",
+        "ACT-017",
+        "ACT-028",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "moderate",
+      "aqi": 75,
+      "pm25": 20,
+      "sensitive": true,
+      "budget": "medium",
+      "actionIds": [
+        "ACT-015",
+        "ACT-002",
+        "ACT-003",
+        "ACT-001",
+        "ACT-004",
+        "ACT-007",
+        "ACT-009",
+        "ACT-006",
+        "ACT-025",
+        "ACT-028",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "usg",
+      "aqi": 125,
+      "pm25": 42,
+      "sensitive": false,
+      "budget": "none",
+      "actionIds": [
+        "ACT-015",
+        "ACT-002",
+        "ACT-003",
+        "ACT-001",
+        "ACT-014",
+        "ACT-007",
+        "ACT-009",
+        "ACT-028",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "usg",
+      "aqi": 125,
+      "pm25": 42,
+      "sensitive": false,
+      "budget": "low",
+      "actionIds": [
+        "ACT-015",
+        "ACT-002",
+        "ACT-003",
+        "ACT-001",
+        "ACT-014",
+        "ACT-007",
+        "ACT-009",
+        "ACT-025",
+        "ACT-017",
+        "ACT-028",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "usg",
+      "aqi": 125,
+      "pm25": 42,
+      "sensitive": false,
+      "budget": "medium",
+      "actionIds": [
+        "ACT-015",
+        "ACT-002",
+        "ACT-003",
+        "ACT-001",
+        "ACT-014",
+        "ACT-007",
+        "ACT-009",
+        "ACT-006",
+        "ACT-025",
+        "ACT-028",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "usg",
+      "aqi": 125,
+      "pm25": 42,
+      "sensitive": true,
+      "budget": "none",
+      "actionIds": [
+        "ACT-015",
+        "ACT-021",
+        "ACT-002",
+        "ACT-001",
+        "ACT-014",
+        "ACT-007",
+        "ACT-020",
+        "ACT-009",
+        "ACT-011",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "usg",
+      "aqi": 125,
+      "pm25": 42,
+      "sensitive": true,
+      "budget": "low",
+      "actionIds": [
+        "ACT-015",
+        "ACT-005",
+        "ACT-021",
+        "ACT-002",
+        "ACT-001",
+        "ACT-007",
+        "ACT-010",
+        "ACT-020",
+        "ACT-009",
+        "ACT-011",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "usg",
+      "aqi": 125,
+      "pm25": 42,
+      "sensitive": true,
+      "budget": "medium",
+      "actionIds": [
+        "ACT-015",
+        "ACT-005",
+        "ACT-021",
+        "ACT-002",
+        "ACT-001",
+        "ACT-007",
+        "ACT-010",
+        "ACT-020",
+        "ACT-009",
+        "ACT-011",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "unhealthy",
+      "aqi": 175,
+      "pm25": 72,
+      "sensitive": false,
+      "budget": "none",
+      "actionIds": [
+        "ACT-015",
+        "ACT-002",
+        "ACT-021",
+        "ACT-003",
+        "ACT-001",
+        "ACT-007",
+        "ACT-020",
+        "ACT-009",
+        "ACT-011",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "unhealthy",
+      "aqi": 175,
+      "pm25": 72,
+      "sensitive": false,
+      "budget": "low",
+      "actionIds": [
+        "ACT-015",
+        "ACT-005",
+        "ACT-002",
+        "ACT-021",
+        "ACT-003",
+        "ACT-007",
+        "ACT-010",
+        "ACT-020",
+        "ACT-009",
+        "ACT-011",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "unhealthy",
+      "aqi": 175,
+      "pm25": 72,
+      "sensitive": false,
+      "budget": "medium",
+      "actionIds": [
+        "ACT-015",
+        "ACT-005",
+        "ACT-002",
+        "ACT-021",
+        "ACT-003",
+        "ACT-007",
+        "ACT-010",
+        "ACT-020",
+        "ACT-009",
+        "ACT-011",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "unhealthy",
+      "aqi": 175,
+      "pm25": 72,
+      "sensitive": true,
+      "budget": "none",
+      "actionIds": [
+        "ACT-015",
+        "ACT-018",
+        "ACT-021",
+        "ACT-002",
+        "ACT-001",
+        "ACT-007",
+        "ACT-020",
+        "ACT-009",
+        "ACT-011",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "unhealthy",
+      "aqi": 175,
+      "pm25": 72,
+      "sensitive": true,
+      "budget": "low",
+      "actionIds": [
+        "ACT-015",
+        "ACT-018",
+        "ACT-005",
+        "ACT-021",
+        "ACT-002",
+        "ACT-007",
+        "ACT-010",
+        "ACT-020",
+        "ACT-009",
+        "ACT-011",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "unhealthy",
+      "aqi": 175,
+      "pm25": 72,
+      "sensitive": true,
+      "budget": "medium",
+      "actionIds": [
+        "ACT-015",
+        "ACT-018",
+        "ACT-005",
+        "ACT-021",
+        "ACT-002",
+        "ACT-007",
+        "ACT-010",
+        "ACT-020",
+        "ACT-009",
+        "ACT-011",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "very_unhealthy",
+      "aqi": 250,
+      "pm25": 180,
+      "sensitive": false,
+      "budget": "none",
+      "actionIds": [
+        "ACT-015",
+        "ACT-018",
+        "ACT-002",
+        "ACT-021",
+        "ACT-001",
+        "ACT-007",
+        "ACT-020",
+        "ACT-009",
+        "ACT-011",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "very_unhealthy",
+      "aqi": 250,
+      "pm25": 180,
+      "sensitive": false,
+      "budget": "low",
+      "actionIds": [
+        "ACT-015",
+        "ACT-018",
+        "ACT-005",
+        "ACT-002",
+        "ACT-021",
+        "ACT-007",
+        "ACT-010",
+        "ACT-020",
+        "ACT-009",
+        "ACT-011",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "very_unhealthy",
+      "aqi": 250,
+      "pm25": 180,
+      "sensitive": false,
+      "budget": "medium",
+      "actionIds": [
+        "ACT-015",
+        "ACT-018",
+        "ACT-005",
+        "ACT-002",
+        "ACT-021",
+        "ACT-007",
+        "ACT-010",
+        "ACT-020",
+        "ACT-009",
+        "ACT-011",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "very_unhealthy",
+      "aqi": 250,
+      "pm25": 180,
+      "sensitive": true,
+      "budget": "none",
+      "actionIds": [
+        "ACT-015",
+        "ACT-018",
+        "ACT-021",
+        "ACT-002",
+        "ACT-001",
+        "ACT-007",
+        "ACT-020",
+        "ACT-009",
+        "ACT-019",
+        "ACT-011",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "very_unhealthy",
+      "aqi": 250,
+      "pm25": 180,
+      "sensitive": true,
+      "budget": "low",
+      "actionIds": [
+        "ACT-015",
+        "ACT-018",
+        "ACT-005",
+        "ACT-021",
+        "ACT-002",
+        "ACT-007",
+        "ACT-010",
+        "ACT-020",
+        "ACT-009",
+        "ACT-019",
+        "ACT-011",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "very_unhealthy",
+      "aqi": 250,
+      "pm25": 180,
+      "sensitive": true,
+      "budget": "medium",
+      "actionIds": [
+        "ACT-015",
+        "ACT-018",
+        "ACT-005",
+        "ACT-021",
+        "ACT-002",
+        "ACT-007",
+        "ACT-010",
+        "ACT-020",
+        "ACT-009",
+        "ACT-019",
+        "ACT-011",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "hazardous",
+      "aqi": 400,
+      "pm25": 300,
+      "sensitive": false,
+      "budget": "none",
+      "actionIds": [
+        "ACT-015",
+        "ACT-018",
+        "ACT-002",
+        "ACT-021",
+        "ACT-001",
+        "ACT-007",
+        "ACT-020",
+        "ACT-009",
+        "ACT-019",
+        "ACT-011",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "hazardous",
+      "aqi": 400,
+      "pm25": 300,
+      "sensitive": false,
+      "budget": "low",
+      "actionIds": [
+        "ACT-015",
+        "ACT-018",
+        "ACT-005",
+        "ACT-002",
+        "ACT-021",
+        "ACT-007",
+        "ACT-010",
+        "ACT-020",
+        "ACT-009",
+        "ACT-019",
+        "ACT-011",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "hazardous",
+      "aqi": 400,
+      "pm25": 300,
+      "sensitive": false,
+      "budget": "medium",
+      "actionIds": [
+        "ACT-015",
+        "ACT-018",
+        "ACT-005",
+        "ACT-002",
+        "ACT-021",
+        "ACT-007",
+        "ACT-010",
+        "ACT-020",
+        "ACT-009",
+        "ACT-019",
+        "ACT-011",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "hazardous",
+      "aqi": 400,
+      "pm25": 300,
+      "sensitive": true,
+      "budget": "none",
+      "actionIds": [
+        "ACT-015",
+        "ACT-018",
+        "ACT-021",
+        "ACT-002",
+        "ACT-001",
+        "ACT-007",
+        "ACT-020",
+        "ACT-009",
+        "ACT-019",
+        "ACT-011",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "hazardous",
+      "aqi": 400,
+      "pm25": 300,
+      "sensitive": true,
+      "budget": "low",
+      "actionIds": [
+        "ACT-015",
+        "ACT-018",
+        "ACT-005",
+        "ACT-021",
+        "ACT-002",
+        "ACT-007",
+        "ACT-010",
+        "ACT-020",
+        "ACT-009",
+        "ACT-019",
+        "ACT-011",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "hazardous",
+      "aqi": 400,
+      "pm25": 300,
+      "sensitive": true,
+      "budget": "medium",
+      "actionIds": [
+        "ACT-015",
+        "ACT-018",
+        "ACT-005",
+        "ACT-021",
+        "ACT-002",
+        "ACT-007",
+        "ACT-010",
+        "ACT-020",
+        "ACT-009",
+        "ACT-019",
+        "ACT-011",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "severe",
+      "aqi": 550,
+      "pm25": 550,
+      "sensitive": false,
+      "budget": "none",
+      "actionIds": [
+        "ACT-015",
+        "ACT-018",
+        "ACT-002",
+        "ACT-021",
+        "ACT-001",
+        "ACT-007",
+        "ACT-020",
+        "ACT-009",
+        "ACT-019",
+        "ACT-011",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "severe",
+      "aqi": 550,
+      "pm25": 550,
+      "sensitive": false,
+      "budget": "low",
+      "actionIds": [
+        "ACT-015",
+        "ACT-018",
+        "ACT-005",
+        "ACT-002",
+        "ACT-021",
+        "ACT-007",
+        "ACT-010",
+        "ACT-020",
+        "ACT-009",
+        "ACT-019",
+        "ACT-011",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "severe",
+      "aqi": 550,
+      "pm25": 550,
+      "sensitive": false,
+      "budget": "medium",
+      "actionIds": [
+        "ACT-015",
+        "ACT-018",
+        "ACT-005",
+        "ACT-002",
+        "ACT-021",
+        "ACT-007",
+        "ACT-010",
+        "ACT-020",
+        "ACT-009",
+        "ACT-019",
+        "ACT-011",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "severe",
+      "aqi": 550,
+      "pm25": 550,
+      "sensitive": true,
+      "budget": "none",
+      "actionIds": [
+        "ACT-015",
+        "ACT-018",
+        "ACT-021",
+        "ACT-002",
+        "ACT-001",
+        "ACT-007",
+        "ACT-020",
+        "ACT-009",
+        "ACT-019",
+        "ACT-011",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "severe",
+      "aqi": 550,
+      "pm25": 550,
+      "sensitive": true,
+      "budget": "low",
+      "actionIds": [
+        "ACT-015",
+        "ACT-018",
+        "ACT-005",
+        "ACT-021",
+        "ACT-002",
+        "ACT-007",
+        "ACT-010",
+        "ACT-020",
+        "ACT-009",
+        "ACT-019",
+        "ACT-011",
+        "ACT-023"
+      ]
+    },
+    {
+      "band": "severe",
+      "aqi": 550,
+      "pm25": 550,
+      "sensitive": true,
+      "budget": "medium",
+      "actionIds": [
+        "ACT-015",
+        "ACT-018",
+        "ACT-005",
+        "ACT-021",
+        "ACT-002",
+        "ACT-007",
+        "ACT-010",
+        "ACT-020",
+        "ACT-009",
+        "ACT-019",
+        "ACT-011",
+        "ACT-023"
+      ]
+    }
+  ]
+}
