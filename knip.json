@@ -1,0 +1,15 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": ["scripts/*.{ts,mjs}"],
+  "project": ["src/**/*.{ts,tsx}", "tests/**/*.{ts,tsx}", "scripts/**/*.{ts,mjs}"],
+  "ignoreDependencies": ["lighthouse"],
+  "ignoreExportsUsedInFile": true,
+  "rules": {
+    "files": "error",
+    "dependencies": "error",
+    "unlisted": "error",
+    "duplicates": "error",
+    "exports": "warn",
+    "types": "warn"
+  }
+}

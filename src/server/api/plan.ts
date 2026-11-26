@@ -8,17 +8,17 @@ import {
 } from '@/domain/profile';
 import { classifyAqi, computeEffectiveEscalationLevel } from '@/domain/aqi-bands';
 import { buildBasicPlan } from '@/domain/plan';
-import { generatePersonalizedPlan } from '@/lib/ai/planner';
+import { generatePersonalizedPlan } from '@/server/llm/planner';
 import { getRequestId, REQUEST_ID_HEADER } from '@/server/http/requestId';
 import {
   MemoryBucketStore,
   TokenBucketLimiter,
   getHashedClientKey,
 } from '@/server/security/rateLimit';
-import { readJsonBoundary } from '@/server/security/limits';
+import { RATE_LIMITS, readJsonBoundary } from '@/server/security/limits';
 import { apiErrorResponse, securityJson } from '@/server/security/response';
 
-const limiter = new TokenBucketLimiter(6, 60_000, new MemoryBucketStore());
+const limiter = new TokenBucketLimiter(RATE_LIMITS.planPerMinute, 60_000, new MemoryBucketStore());
 const SnapshotSchema = z.object({
   aqi: z.number().min(0).max(1000),
   pm25: z.number().min(0).max(1500).optional(),

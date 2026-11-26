@@ -4,6 +4,9 @@
 
 import { z } from 'zod';
 import { randomUUID } from 'crypto';
+import { RATE_LIMITS } from '../security/limits';
+
+export const DEFAULT_GEMINI_MODEL = 'gemini-3.8-flash';
 
 export const EnvSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
@@ -12,15 +15,15 @@ export const EnvSchema = z.object({
 
   AQ_PROVIDER: z.string().default('open-meteo'),
 
-  RATE_LIMIT_PLAN: z.coerce.number().int().positive().default(10),
-  RATE_LIMIT_AQI: z.coerce.number().int().positive().default(60),
-  RATE_LIMIT_GEOCODE: z.coerce.number().int().positive().default(30),
+  RATE_LIMIT_PLAN: z.coerce.number().int().positive().default(RATE_LIMITS.planPerMinute),
+  RATE_LIMIT_AQI: z.coerce.number().int().positive().default(RATE_LIMITS.airQualityPerMinute),
+  RATE_LIMIT_GEOCODE: z.coerce.number().int().positive().default(RATE_LIMITS.geocodePerMinute),
   TRUSTED_PROXY_HEADER: z.string().min(1).max(100).default('x-forwarded-for'),
   CLIENT_IP_SALT: z.string().min(16).default(randomUUID()),
 
   // Optional LLM configuration (Gemini)
   GEMINI_API_KEY: z.string().min(1).optional(),
-  GEMINI_MODEL: z.string().default('gemini-1.5-flash'),
+  GEMINI_MODEL: z.string().default(DEFAULT_GEMINI_MODEL),
   LLM_ENABLED: z
     .string()
     .transform((val) => val === 'true' || val === '1')

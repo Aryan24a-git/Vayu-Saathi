@@ -9,10 +9,10 @@ import {
   TokenBucketLimiter,
   getHashedClientKey,
 } from '@/server/security/rateLimit';
-import { readJsonBoundary, MAX_QUESTION_LENGTH } from '@/server/security/limits';
+import { RATE_LIMITS, readJsonBoundary, MAX_QUESTION_LENGTH } from '@/server/security/limits';
 import { apiErrorResponse, securityJson } from '@/server/security/response';
 
-const limiter = new TokenBucketLimiter(4, 60_000, new MemoryBucketStore());
+const limiter = new TokenBucketLimiter(RATE_LIMITS.askPerMinute, 60_000, new MemoryBucketStore());
 const RequestSchema = z.object({
   question: z.string().trim().min(3).max(MAX_QUESTION_LENGTH),
   profile: ProfileSchema.optional(),

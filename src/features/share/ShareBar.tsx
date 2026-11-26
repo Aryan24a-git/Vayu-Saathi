@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import type { NormalizedPlan } from '../plan/usePlan';
-import type { AqiReading } from '@/lib/providers/aqi';
+import type { AqiReading } from '@/domain/aqi-bands';
 import { planToText } from './planToText';
 
 export function ShareBar({ plan, reading }: { plan: NormalizedPlan; reading: AqiReading }) {

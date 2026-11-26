@@ -1,5 +1,5 @@
 import type { NormalizedPlan } from '../plan/usePlan';
-import type { AqiReading } from '@/lib/providers/aqi';
+import type { AqiReading } from '@/domain/aqi-bands';
 
 export function planToText(plan: NormalizedPlan, reading: AqiReading): string {
   const items = [...plan.routine, ...plan.indoors, ...plan.alternatives];

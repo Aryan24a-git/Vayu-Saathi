@@ -28,6 +28,8 @@ export interface AqiReading {
   timestamp: string;
   source: string;
   isFallback: boolean;
+  isStale?: boolean;
+  band?: string;
 }
 
 // ─── AQI Band Table ───────────────────────────────────────────────────────────

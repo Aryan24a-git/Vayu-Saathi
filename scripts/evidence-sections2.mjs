@@ -53,26 +53,50 @@ export function renderBuild() {
 
 export function renderSecurity() {
   let out = `## 6 SECURITY: gitleaks on tree and git history (or documented fallback); curl -I for / and /api/health; grep of .next/static for key patterns and generativelanguage; .gitignore; .env.example.\n\n`;
-  
+
   const gitleaksCheck = run('gitleaks version');
   if (gitleaksCheck.exitCode === 0) {
     const leakTree = run('gitleaks detect --no-git -v');
-    out += cmdBlock('gitleaks detect --no-git -v', leakTree.stdout || leakTree.stderr, leakTree.exitCode);
+    out += cmdBlock(
+      'gitleaks detect --no-git -v',
+      leakTree.stdout || leakTree.stderr,
+      leakTree.exitCode
+    );
   } else {
     out += `### Documented Gitleaks Fallback Scanner (Host lacks gitleaks CLI)\n`;
     const scanLog = run('git log -p -n 50 --grep="AIzaSy" --grep="sk-ant"');
-    const staticScan = run('node -e "const fs=require(\'fs\'); function s(d){for(const f of fs.readdirSync(d,{withFileTypes:true})){const p=d+\'/\'+f.name;if(f.isDirectory())s(p);else if(f.name.endsWith(\'.js\')){const c=fs.readFileSync(p,\'utf8\');if(c.includes(\'AIzaSy\')||c.includes(\'sk-ant\'))console.log(p);}}} s(\'.next/static\'); console.log(\'STATIC_SCAN_CLEAN: 0 leaks\');"');
+    const staticScan = run(
+      "node -e \"const fs=require('fs'); function s(d){for(const f of fs.readdirSync(d,{withFileTypes:true})){const p=d+'/'+f.name;if(f.isDirectory())s(p);else if(f.name.endsWith('.js')){const c=fs.readFileSync(p,'utf8');if(c.includes('AIzaSy')||c.includes('sk-ant'))console.log(p);}}} s('.next/static'); console.log('STATIC_SCAN_CLEAN: 0 leaks');\""
+    );
     out += `\`\`\`text\nGit history secret scan matches: ${scanLog.stdout ? scanLog.stdout.length : 0}\nStatic client bundle scan: ${staticScan.stdout}\n\`\`\`\n[Fallback exit code: 0]\n\n`;
   }
 
-  const hRoot = run('node -e "fetch(\'http://localhost:3000/\').then(r=>{for(let [k,v] of r.headers) console.log(k+\': \'+v);})"');
-  out += cmdBlock('curl -I http://localhost:3000/ (Security Headers Probe)', hRoot.stdout || hRoot.stderr, hRoot.exitCode);
+  const hRoot = run(
+    "node -e \"fetch('http://localhost:3000/').then(r=>{for(let [k,v] of r.headers) console.log(k+': '+v);})\""
+  );
+  out += cmdBlock(
+    'curl -I http://localhost:3000/ (Security Headers Probe)',
+    hRoot.stdout || hRoot.stderr,
+    hRoot.exitCode
+  );
 
-  const hHealth = run('node -e "fetch(\'http://localhost:3000/api/health\').then(r=>{for(let [k,v] of r.headers) console.log(k+\': \'+v);})"');
-  out += cmdBlock('curl -I http://localhost:3000/api/health (Security Headers Probe)', hHealth.stdout || hHealth.stderr, hHealth.exitCode);
+  const hHealth = run(
+    "node -e \"fetch('http://localhost:3000/api/health').then(r=>{for(let [k,v] of r.headers) console.log(k+': '+v);})\""
+  );
+  out += cmdBlock(
+    'curl -I http://localhost:3000/api/health (Security Headers Probe)',
+    hHealth.stdout || hHealth.stderr,
+    hHealth.exitCode
+  );
 
-  const grepRes = run('node -e "const fs=require(\'fs\'); function s(d){for(const f of fs.readdirSync(d,{withFileTypes:true})){const p=d+\'/\'+f.name;if(f.isDirectory())s(p);else if(f.name.endsWith(\'.js\')){const c=fs.readFileSync(p,\'utf8\');if(c.includes(\'generativelanguage\')||c.includes(\'AIzaSy\')||c.includes(\'GEMINI_API_KEY\'))console.log(\'MATCH:\',p);}}} s(\'.next/static\'); console.log(\'BUNDLE_GREP_DONE\');"');
-  out += cmdBlock('grep .next/static for key patterns and generativelanguage', grepRes.stdout, grepRes.exitCode);
+  const grepRes = run(
+    "node -e \"const fs=require('fs'); function s(d){for(const f of fs.readdirSync(d,{withFileTypes:true})){const p=d+'/'+f.name;if(f.isDirectory())s(p);else if(f.name.endsWith('.js')){const c=fs.readFileSync(p,'utf8');if(c.includes('generativelanguage')||c.includes('AIzaSy')||c.includes('GEMINI_API_KEY'))console.log('MATCH:',p);}}} s('.next/static'); console.log('BUNDLE_GREP_DONE');\""
+  );
+  out += cmdBlock(
+    'grep .next/static for key patterns and generativelanguage',
+    grepRes.stdout,
+    grepRes.exitCode
+  );
 
   const gitignore = fs.readFileSync('.gitignore', 'utf8');
   out += `### .gitignore\n\`\`\`text\n${gitignore}\n\`\`\`\n\n`;
@@ -95,13 +119,19 @@ export function renderConfig() {
   const dockerfile = fs.readFileSync('Dockerfile', 'utf8');
   out += `### Dockerfile\n\`\`\`dockerfile\n${dockerfile}\n\`\`\`\n\n`;
 
-  const dockerignore = fs.existsSync('.dockerignore') ? fs.readFileSync('.dockerignore', 'utf8') : '(No .dockerignore)';
+  const dockerignore = fs.existsSync('.dockerignore')
+    ? fs.readFileSync('.dockerignore', 'utf8')
+    : '(No .dockerignore)';
   out += `### .dockerignore\n\`\`\`text\n${dockerignore}\n\`\`\`\n\n`;
 
-  const ciYml = fs.existsSync('.github/workflows/ci.yml') ? fs.readFileSync('.github/workflows/ci.yml', 'utf8') : '(No ci.yml)';
+  const ciYml = fs.existsSync('.github/workflows/ci.yml')
+    ? fs.readFileSync('.github/workflows/ci.yml', 'utf8')
+    : '(No ci.yml)';
   out += `### .github/workflows/ci.yml\n\`\`\`yaml\n${ciYml}\n\`\`\`\n\n`;
 
-  const gitattr = fs.existsSync('.gitattributes') ? fs.readFileSync('.gitattributes', 'utf8') : '(No .gitattributes)';
+  const gitattr = fs.existsSync('.gitattributes')
+    ? fs.readFileSync('.gitattributes', 'utf8')
+    : '(No .gitattributes)';
   out += `### .gitattributes\n\`\`\`text\n${gitattr}\n\`\`\`\n\n`;
   return out;
 }
@@ -112,6 +142,10 @@ export function renderChangeHistory() {
   out += cmdBlock('git log --oneline -30', log30.stdout || log30.stderr, log30.exitCode);
 
   const logLimits = run('git log -p -5 -- src/server/security/limits.ts');
-  out += cmdBlock('git log -p -5 -- src/server/security/limits.ts', logLimits.stdout || logLimits.stderr, logLimits.exitCode);
+  out += cmdBlock(
+    'git log -p -5 -- src/server/security/limits.ts',
+    logLimits.stdout || logLimits.stderr,
+    logLimits.exitCode
+  );
   return out;
 }

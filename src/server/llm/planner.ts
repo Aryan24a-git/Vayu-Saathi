@@ -6,8 +6,8 @@ import type { AqiBand } from '../../domain/aqi-bands';
 import { assemblePlan } from '../../domain/rules-engine';
 import catalogData from '../../catalog/catalog.json';
 import type { Action } from '../../catalog/catalog.schema';
-import { logger } from '../logger';
-import { narrate } from '../../server/llm/narrate';
+import { logger } from '../../lib/logger';
+import { narrate } from './narrate';
 import { buildBasicPlan } from '../../domain/plan';
 import type { AirQualitySnapshot } from '../../domain/types';
 
@@ -46,7 +46,6 @@ export async function generatePersonalizedPlan(
   let narrative = buildDeterministicNarrative(band, escalationLevel);
   let keyAdvice = 'Stay indoors when possible and check updates regularly.';
   let isFallback = true;
-  let finalActions = eligibleActions;
 
   try {
     const now = new Date();
@@ -88,7 +87,7 @@ export async function generatePersonalizedPlan(
     medicalDisclaimer: basePlan.medicalDisclaimer,
     narrative,
     keyAdvice,
-    actions: finalActions,
+    actions: eligibleActions,
     isFallback,
   };
 }

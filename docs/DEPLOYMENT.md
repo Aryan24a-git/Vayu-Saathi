@@ -46,13 +46,13 @@ Clear Air Companion is packaged as an Alpine Docker container running Next.js 14
 | `APP_ORIGIN` | No | `http://localhost:3000` | Base URL for CORS and absolute URL formation |
 | `LOG_LEVEL` | No | `info` | Logging verbosity (`debug`, `info`, `warn`, `error`) |
 | `AQ_PROVIDER` | No | `open-meteo` | Upstream air quality provider adapter |
-| `RATE_LIMIT_PLAN` | No | `10` | Plan generation requests per minute per IP |
-| `RATE_LIMIT_AQI` | No | `60` | AQI query requests per minute per IP |
-| `RATE_LIMIT_GEOCODE` | No | `30` | Geocoding requests per minute per IP |
+| `RATE_LIMIT_PLAN` | No | `6` | Plan generation requests per minute per IP (`RATE_LIMITS.planPerMinute`) |
+| `RATE_LIMIT_AQI` | No | `30` | Air quality requests per minute per IP (`RATE_LIMITS.airQualityPerMinute`) |
+| `RATE_LIMIT_GEOCODE` | No | `30` | Geocoding requests per minute per IP (`RATE_LIMITS.geocodePerMinute`) |
 | `TRUSTED_PROXY_HEADER` | No | `x-forwarded-for` | Header used for rate limit IP derivation |
 | `CLIENT_IP_SALT` | No | Auto-generated UUID | Salt for SHA-256 IP hashing (never store raw IP) |
 | `GEMINI_API_KEY` | Optional | `undefined` | Google Gemini API key for AI narration & photo audit. If absent, fallback rules engine is used |
-| `LLM_MODEL` | No | `gemini-1.5-flash` | LLM model identifier |
+| `GEMINI_MODEL` | No | `gemini-3.8-flash` | Gemini model identifier for text & image input |
 | `LLM_ENABLED` | No | `true` | Master toggle for LLM narration |
 | `LLM_DAILY_CALL_CAP`| No | `1000` | Daily budget circuit breaker for LLM invocations |
 

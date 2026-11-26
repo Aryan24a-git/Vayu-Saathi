@@ -1,18 +1,22 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import type { LocationScenario } from '@/domain/scenarios';
-import { searchCities } from '@/lib/providers/geocoding';
+import { searchOpenMeteo } from '@/server/providers/geocoding';
 import { getRequestId, REQUEST_ID_HEADER } from '@/server/http/requestId';
 import {
   MemoryBucketStore,
   TokenBucketLimiter,
   getHashedClientKey,
 } from '@/server/security/rateLimit';
-import { boundaryError, MAX_QUERY_LENGTH } from '@/server/security/limits';
+import { boundaryError, MAX_QUERY_LENGTH, RATE_LIMITS } from '@/server/security/limits';
 import { apiErrorResponse, securityJson } from '@/server/security/response';
 import { LruCache } from '@/server/cache/lru';
 
-const limiter = new TokenBucketLimiter(30, 60_000, new MemoryBucketStore());
+const limiter = new TokenBucketLimiter(
+  RATE_LIMITS.cityScenarioPerMinute,
+  60_000,
+  new MemoryBucketStore()
+);
 const scenarioCache = new LruCache<string, LocationScenario>({
   maxEntries: 100,
   ttlMs: 15 * 60 * 1000,
@@ -128,7 +132,7 @@ export async function handleCityScenario(req: NextRequest) {
   const cached = scenarioCache.get(q);
   if (cached) return securityJson(cached, 200, { [REQUEST_ID_HEADER]: requestId });
 
-  const geoRes = await searchCities(q);
+  const geoRes = await searchOpenMeteo(q).catch(() => []);
   if (!geoRes || geoRes.length === 0) {
     return apiErrorResponse(
       {
@@ -159,8 +163,4 @@ export async function handleCityScenario(req: NextRequest) {
   const scenario = buildScenarioFromData(top.name, top.admin1, meteo);
   scenarioCache.set(q, scenario);
   return securityJson(scenario, 200, { [REQUEST_ID_HEADER]: requestId });
-}
-
-export async function GET(req: NextRequest) {
-  return handleCityScenario(req);
 }

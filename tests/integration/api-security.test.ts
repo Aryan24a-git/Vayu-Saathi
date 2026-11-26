@@ -12,6 +12,7 @@ import { openMeteoHandlers } from './msw/handlers';
 import { createDefaultProfile } from '../../src/domain/profile';
 import { clearAirQualityCaches } from '../../src/server/providers/openMeteoAirQuality';
 import { getHashedClientKey } from '../../src/server/security/rateLimit';
+import { RATE_LIMITS } from '../../src/server/security/limits';
 
 const server = setupServer(...openMeteoHandlers);
 
@@ -101,7 +102,7 @@ describe('API boundary security', () => {
   it('returns 429 with Retry-After for ask requests', async () => {
     const headers = { 'content-type': 'application/json', 'x-forwarded-for': '203.0.113.15' };
     let response: Response = new Response();
-    for (let index = 0; index < 5; index += 1) {
+    for (let index = 0; index < RATE_LIMITS.askPerMinute + 1; index += 1) {
       response = await askPost(
         request('http://localhost/api/ask', {
           method: 'POST',

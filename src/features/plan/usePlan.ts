@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import catalogData from '@/catalog/catalog.json';
 import type { Action } from '@/catalog/catalog.schema';
 import type { Profile } from '@/domain/profile';
-import type { AqiReading } from '@/lib/providers/aqi';
+import type { AqiReading } from '@/domain/aqi-bands';
 
 export type PlanState =
   | 'idle'

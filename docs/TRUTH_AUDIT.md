@@ -8,14 +8,14 @@
 
 | Feature | Implementation File(s) | Kind | LLM Called? | Behavior on Failure | Test Proving It | Exact UI Wording |
 |---|---|---|---|---|---|---|
-| **Live City Search** | `src/server/api/geocode.ts`, `src/lib/providers/geocoding.ts` | REAL external call (Open-Meteo Geocoding) | No | Returns typed `PROVIDER_UNAVAILABLE` (502) or 404 | `tests/unit/server-http.test.ts` | "Search Indian city or district..." |
-| **Air Data & Freshness** | `src/server/api/airQuality.ts`, `src/server/api/cityScenario.ts` | REAL external call (Open-Meteo Air Quality) | No | Returns 502 with manual AQI prompt; never silent defaults | `tests/unit/api-city-scenario.test.ts`, `tests/integration/api-security.test.ts` | "Model-derived NAQI equivalent (Open-Meteo)" + timestamp |
+| **Live City Search** | `src/server/api/geocode.ts`, `src/server/providers/geocoding.ts` | REAL external call (Open-Meteo Geocoding) | No | Returns typed `PROVIDER_UNAVAILABLE` (502) or 404 | `tests/unit/server-http.test.ts` | "Search Indian city..." |
+| **Air Data & Freshness** | `src/server/api/airQuality.ts`, `src/server/api/cityScenario.ts` | REAL external call (Open-Meteo Air Quality) | No | Returns 502/503 with manual AQI prompt; never silent defaults | `tests/unit/api-city-scenario.test.ts`, `tests/integration/api-security.test.ts` | "Model-derived NAQI equivalent (Open-Meteo)" + timestamp |
 | **CPCB NAQI Calculation** | `src/domain/naqi.ts` | DETERMINISTIC pure function | No | Non-finite inputs throw `TypeError` / return `INVALID_INPUT` error | `tests/unit/naqi.test.ts` | "CPCB NAQI", dominant pollutant label, color-coded band |
 | **Ventilation Window** | `src/domain/ventilation.ts`, `src/domain/naqi.ts` | DETERMINISTIC diurnal heuristic | No | Series < 24h returns `INSUFFICIENT_DATA`; post-16:00 projects tomorrow | `tests/unit/ventilation.test.ts`, `tests/unit/naqi.test.ts` | "Optimal Safe Ventilation: {windowLabel}" |
 | **Diurnal Dispersion Curve** | `src/features/hero/DispersionChart.tsx`, `chartCoordinates.ts` | DETERMINISTIC pure SVG | No | Fallback to accessible table | `tests/unit/plan-ui.test.tsx`, Playwright Axe suite | "24-Hour Thermal Inversion & Ventilation Curve" |
 | **Playbook & Actions** | `src/domain/catalog/`, `src/domain/rules/`, `src/server/api/playbook.ts` | DETERMINISTIC catalog rules engine | No | Rules engine fallback; only curated actions selected | `tests/unit/rules.test.ts`, `tests/unit/catalog.test.ts` | "Daily Anti-Smog Playbook", "Indoor Hacks", "Emission Swaps" |
-| **AI Personalization** | `src/server/llm/narrate.ts`, `src/app/api/plan/narrate/route.ts` | REAL server LLM call (when key present) | Yes (Gemini 1.5 Flash) | Falls back to deterministic catalog titles & explainers | `tests/unit/llm-grounding.test.ts` | "Personalize with AI" / "Basic mode (no AI)" |
-| **Copilot Chat** | `src/server/llm/ask.ts`, `src/app/api/ask/route.ts` | REAL server LLM call (when key present) | Yes (Gemini 1.5 Flash) | Falls back to deterministic scope-matched templates | `tests/unit/ai-guardrails.test.ts`, `tests/unit/llm-grounding.test.ts` | "Ask about winter smog, IAQ, or routines..." |
+| **AI Personalization** | `src/server/llm/narrate.ts`, `src/app/api/plan/narrate/route.ts` | REAL server LLM call (when key present) | Yes (`GEMINI_MODEL`, default `gemini-3.8-flash`) | Falls back to deterministic catalog titles & explainers | `tests/unit/llm-grounding.test.ts` | Header `"AI on"` / `"Basic mode"` badge from `/api/ready` |
+| **Copilot Chat** | `src/server/llm/ask.ts`, `src/app/api/ask/route.ts` | REAL server LLM call (when key present) | Yes (`GEMINI_MODEL`, default `gemini-3.8-flash`) | Falls back to deterministic scope-matched templates; 404 logs once & flips `/api/ready` `llm: false` | `tests/unit/ai-guardrails.test.ts`, `tests/unit/llm-model-fallback.test.ts` | "Ask about school commute, DIY filters..." |
 | **Photo IAQ Audit** | `src/server/api/audit.ts`, `src/features/copilot/MultimodalAudit.tsx` | REAL Gemini Vision (when key present) or DETERMINISTIC Checklist | Yes (if key present); No (Basic mode) | Basic mode returns tailored physical checklist; honest badge shown | `tests/unit/api-audit.test.ts` | "Tailored checklist for {focusArea}. Photo was not analysed by vision AI." / "Gemini Multimodal Vision" |
 | **WhatsApp RWA Bulletin** | `src/server/api/bulletin.ts`, `src/features/community/WhatsAppGenerator.tsx` | DETERMINISTIC template with optional Gemini polish | Optional | Deterministic factual template in English or Hindi | `tests/unit/api-bulletin.test.ts` | "1-Tap WhatsApp RWA Bulletin", "Generate with AI" |
 | **Colony Simulator** | `src/domain/emissions.ts`, `src/features/community/ColonySimulator.tsx` | DETERMINISTIC mathematical model | No | Clamped to [1, 10000] families and [1, 7] days | `tests/unit/emissions.test.ts`, `tests/unit/community.test.ts` | "Colony What-If Smog Reduction Simulator", "Rough estimate" |
@@ -28,9 +28,9 @@
 ---
 
 ## 2. Real LLM vs Honest Basic Mode Policy
-1. **Server-Side Exclusivity:** `GeminiClient` (`src/server/llm/client.ts` / `geminiClient.ts`) is invoked strictly server-side using Node environment variables:
+1. **Server-Side Exclusivity:** `GeminiClient` (`src/server/llm/client.ts`) is invoked strictly server-side using Node environment variables:
    - `GEMINI_API_KEY`: Server secret (never exposed to browser bundles).
-   - `GEMINI_MODEL`: Defaults to `gemini-1.5-flash`.
+   - `GEMINI_MODEL`: Defaults to `gemini-3.8-flash`.
    - `LLM_ENABLED`: Feature flag (`true` / `false`).
 2. **Honest Basic Mode:**
    - If `GEMINI_API_KEY` is not supplied, the application functions in **Basic Mode**:

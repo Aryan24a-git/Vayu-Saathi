@@ -1,16 +1,20 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
-import { searchCities } from '@/lib/providers/geocoding';
+import { searchOpenMeteo } from '@/server/providers/geocoding';
 import { getRequestId, REQUEST_ID_HEADER } from '@/server/http/requestId';
 import {
   MemoryBucketStore,
   TokenBucketLimiter,
   getHashedClientKey,
 } from '@/server/security/rateLimit';
-import { boundaryError, MAX_QUERY_LENGTH } from '@/server/security/limits';
+import { boundaryError, MAX_QUERY_LENGTH, RATE_LIMITS } from '@/server/security/limits';
 import { apiErrorResponse, securityJson } from '@/server/security/response';
 
-const limiter = new TokenBucketLimiter(30, 60_000, new MemoryBucketStore());
+const limiter = new TokenBucketLimiter(
+  RATE_LIMITS.geocodePerMinute,
+  60_000,
+  new MemoryBucketStore()
+);
 const QuerySchema = z.object({ q: z.string().trim().min(2).max(MAX_QUERY_LENGTH) });
 
 export async function handleGeocode(req: NextRequest) {
@@ -26,7 +30,7 @@ export async function handleGeocode(req: NextRequest) {
       400
     );
   }
-  const results = await searchCities(parsed.data.q);
+  const results = await searchOpenMeteo(parsed.data.q).catch(() => []);
   return securityJson(results, 200, { [REQUEST_ID_HEADER]: requestId });
 }
 

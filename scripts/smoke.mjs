@@ -57,8 +57,7 @@ async function runSmoke() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       const items = Array.isArray(json) ? json : json.results;
-      if (!Array.isArray(items) || items.length === 0)
-        throw new Error('No geocode results');
+      if (!Array.isArray(items) || items.length === 0) throw new Error('No geocode results');
     })) && allPass;
 
   allPass =
@@ -134,7 +133,8 @@ async function runSmoke() {
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
-      if (json.status !== 'success' || !json.immediateFix) throw new Error('Invalid audit feedback');
+      if (json.status !== 'success' || !json.immediateFix)
+        throw new Error('Invalid audit feedback');
     })) && allPass;
 
   allPass =

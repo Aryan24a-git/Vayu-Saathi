@@ -13,7 +13,7 @@
 | Threat | Vector | Mitigation | Requirement |
 |--------|--------|------------|-------------|
 | API key leakage | Client bundle, logs, source control | Server-only env vars, bundle grep in CI, .gitignore | SEC-002, SEC-008 |
-| LLM cost abuse | Unbounded requests | Rate limiting (10/min/IP for /api/plan), daily token budget guard, deterministic fallback on budget exceeded | SEC-003 |
+| LLM cost abuse | Unbounded requests | Rate limiting (`RATE_LIMITS` in `src/server/security/limits.ts`, e.g., 6/min/IP for `/api/plan`), daily call budget guard, deterministic fallback on budget exceeded | SEC-003 |
 | Prompt injection | User-supplied text in prompts | Delimiters (XML tags), no tool authority, schema-validated output, action-ID allowlist | SEC-004 |
 | XSS via LLM text | Rendered HTML from model | dangerouslySetInnerHTML banned, all LLM text rendered as plain text or controlled markdown | SEC-007 |
 | SSRF | User-supplied coordinates or city names used in URLs | Fixed host allowlist (open-meteo.com, generativelanguage.googleapis.com), no URL construction from user input | SEC-006 |
@@ -43,12 +43,12 @@ NEXT_PUBLIC_GEMINI_API_KEY  # ❌ exposed to client
 CI runs `grep -r "GEMINI_API_KEY" .next/static` to verify no key in bundle.
 
 ### Rate Limiting (SEC-003)
+Authoritative table defined in `src/server/security/limits.ts` (`RATE_LIMITS`):
 ```typescript
-// /api/plan: 10 requests/minute/IP
-// /api/aqi: 60 requests/minute/IP  
-// /api/geocode: 30 requests/minute/IP
-// /api/followup: 20 requests/minute/IP
-// Daily LLM token budget: configurable via LLM_DAILY_TOKEN_BUDGET env
+// /api/plan: 6/min, /api/plan/narrate: 6/min, /api/playbook: 15/min
+// /api/audit: 4/min, /api/ask: 8/min, /api/bulletin: 10/min
+// /api/air-quality: 30/min, /api/geocode: 30/min, /api/city-scenario: 30/min
+// Daily LLM call cap: configurable via LLM_DAILY_CALL_CAP env
 ```
 
 ### Prompt Injection Defenses (SEC-004)

@@ -6,10 +6,14 @@ import {
   TokenBucketLimiter,
   getHashedClientKey,
 } from '@/server/security/rateLimit';
-import { readJsonBoundary } from '@/server/security/limits';
+import { RATE_LIMITS, readJsonBoundary } from '@/server/security/limits';
 import { apiErrorResponse, securityJson } from '@/server/security/response';
 
-const limiter = new TokenBucketLimiter(20, 60_000, new MemoryBucketStore());
+const limiter = new TokenBucketLimiter(
+  RATE_LIMITS.bulletinPerMinute,
+  60_000,
+  new MemoryBucketStore()
+);
 
 const BulletinRequestSchema = z.object({
   lang: z.enum(['en', 'hi']),

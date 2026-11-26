@@ -1,16 +1,20 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
-import { fetchCurrentAqi } from '@/lib/providers/aqi';
+import { fetchOpenMeteoSnapshot } from '@/server/providers/openMeteoAirQuality';
 import { getRequestId, REQUEST_ID_HEADER } from '@/server/http/requestId';
 import {
   MemoryBucketStore,
   TokenBucketLimiter,
   getHashedClientKey,
 } from '@/server/security/rateLimit';
-import { boundaryError } from '@/server/security/limits';
+import { boundaryError, RATE_LIMITS } from '@/server/security/limits';
 import { apiErrorResponse, securityJson } from '@/server/security/response';
 
-const limiter = new TokenBucketLimiter(30, 60_000, new MemoryBucketStore());
+const limiter = new TokenBucketLimiter(
+  RATE_LIMITS.airQualityPerMinute,
+  60_000,
+  new MemoryBucketStore()
+);
 const QuerySchema = z.object({
   lat: z
     .string()
@@ -39,15 +43,28 @@ export async function handleAirQuality(req: NextRequest) {
       400
     );
   }
-  const reading = await fetchCurrentAqi(parsed.data.lat, parsed.data.lon);
-  if (reading.isFallback) {
+  try {
+    const snapshot = await fetchOpenMeteoSnapshot(parsed.data.lat, parsed.data.lon);
+    return securityJson(
+      {
+        aqi: snapshot.aqi,
+        pm25: snapshot.pm25,
+        timestamp: snapshot.timestamp,
+        source: snapshot.provider,
+        isFallback: snapshot.isFallback,
+        isStale: snapshot.isStale,
+        band: snapshot.band,
+      },
+      200,
+      { [REQUEST_ID_HEADER]: requestId }
+    );
+  } catch {
     return apiErrorResponse(
       boundaryError('PROVIDER_UNAVAILABLE', 'Live air-quality data is unavailable', requestId, 503)
         .error,
       503
     );
   }
-  return securityJson(reading, 200, { [REQUEST_ID_HEADER]: requestId });
 }
 
 function rateLimited(requestId: string, seconds: number) {

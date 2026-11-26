@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { NarrativeSchema, type NarrativeOutput } from './schema';
 
 const MEDICAL_PHRASES = [
@@ -86,6 +87,23 @@ export function classifyQuestionScope(question: string): 'air' | 'indoor' | 'liv
 export function containsInjection(text: string): boolean {
   return (
     INJECTION_PATTERNS.some((pattern) => pattern.test(text)) ||
-    /ignore previous|exfiltrate|system prompt|reveal instructions/i.test(text)
+    /ignore previous|exfiltrate|system prompt|reveal instructions|you are now|jailbreak|bypass/i.test(
+      text
+    )
   );
 }
+
+export function sanitizeInput(text: string, maxLength = 250): string {
+  return text.trim().slice(0, maxLength);
+}
+
+export const PlanOutputSchema = z.object({
+  narrative: z.string().max(1000),
+  selectedActionIds: z
+    .array(z.string().regex(/^ACT-\d{3}$/))
+    .min(1)
+    .max(10),
+  keyAdvice: z.string().max(300),
+});
+
+export type PlanOutput = z.infer<typeof PlanOutputSchema>;

@@ -63,7 +63,8 @@ export function auditToTable(auditJsonStr) {
   try {
     const json = JSON.parse(auditJsonStr);
     const vulns = json.vulnerabilities || {};
-    let table = '| Advisory ID | Severity | Package | Direct / Transitive | Fix Available | Fix Version |\n';
+    let table =
+      '| Advisory ID | Severity | Package | Direct / Transitive | Fix Available | Fix Version |\n';
     table += '|---|---|---|---|---|---|\n';
     const keys = Object.keys(vulns);
     if (keys.length === 0) {
@@ -73,10 +74,18 @@ export function auditToTable(auditJsonStr) {
     for (const key of keys) {
       const v = vulns[key];
       const advIds = Array.isArray(v.via)
-        ? v.via.map((item) => (typeof item === 'object' ? item.url?.split('/').pop() || item.title : item)).join(', ')
+        ? v.via
+            .map((item) =>
+              typeof item === 'object' ? item.url?.split('/').pop() || item.title : item
+            )
+            .join(', ')
         : String(v.via || '-');
       const direct = v.isDirect ? 'Direct' : 'Transitive';
-      const fix = v.fixAvailable ? (typeof v.fixAvailable === 'object' ? v.fixAvailable.name : 'Yes') : 'No';
+      const fix = v.fixAvailable
+        ? typeof v.fixAvailable === 'object'
+          ? v.fixAvailable.name
+          : 'Yes'
+        : 'No';
       const fixVer = typeof v.fixAvailable === 'object' ? v.fixAvailable.version : '-';
       table += `| ${advIds} | **${v.severity?.toUpperCase()}** | \`${v.name}\` | ${direct} | ${fix} | \`${fixVer}\` |\n`;
     }
@@ -97,7 +106,11 @@ export function renderMeta() {
   out += `- **Date**: ${new Date().toISOString()}\n`;
   out += `- **OS**: ${osInfo}\n\n`;
   out += cmdBlock('git rev-parse HEAD', head.stdout || head.stderr, head.exitCode);
-  out += cmdBlock('git status --porcelain', status.stdout || '(clean working tree)', status.exitCode);
+  out += cmdBlock(
+    'git status --porcelain',
+    status.stdout || '(clean working tree)',
+    status.exitCode
+  );
   out += cmdBlock('node -v', nodeV.stdout, nodeV.exitCode);
   out += cmdBlock('npm -v', npmV.stdout, npmV.exitCode);
   return out;

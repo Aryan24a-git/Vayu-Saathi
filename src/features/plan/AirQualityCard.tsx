@@ -1,6 +1,6 @@
 import React from 'react';
 import { AlertTriangle, CheckCircle2 } from 'lucide-react';
-import type { AqiReading } from '@/lib/providers/aqi';
+import type { AqiReading } from '@/domain/aqi-bands';
 import { classifyAqi } from '@/domain/aqi-bands';
 
 export interface AirQualityCardProps {

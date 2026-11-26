@@ -9,7 +9,7 @@ import {
   ProfileSchema,
   type Profile,
 } from '@/domain/profile';
-import type { AqiReading } from '@/lib/providers/aqi';
+import type { AqiReading } from '@/domain/aqi-bands';
 import { AirQualityCard } from './AirQualityCard';
 import { PlanTabs } from './PlanTabs';
 import { SafetyNotice } from './SafetyNotice';
@@ -178,5 +178,3 @@ export function PlanPage() {
     </div>
   );
 }
-
-export default PlanPage;

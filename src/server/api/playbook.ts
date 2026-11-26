@@ -7,10 +7,14 @@ import {
   TokenBucketLimiter,
   getHashedClientKey,
 } from '@/server/security/rateLimit';
-import { readJsonBoundary } from '@/server/security/limits';
+import { RATE_LIMITS, readJsonBoundary } from '@/server/security/limits';
 import { apiErrorResponse, securityJson } from '@/server/security/response';
 
-const limiter = new TokenBucketLimiter(15, 60_000, new MemoryBucketStore());
+const limiter = new TokenBucketLimiter(
+  RATE_LIMITS.playbookPerMinute,
+  60_000,
+  new MemoryBucketStore()
+);
 
 const CpcbBandSchema = z.object({
   max: z.number(),

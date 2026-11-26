@@ -1,7 +1,13 @@
 import fs from 'fs';
 import path from 'path';
 import { renderMeta, renderTree, renderDependencies, renderAudit } from './evidence-sections.mjs';
-import { renderCheck, renderBuild, renderSecurity, renderConfig, renderChangeHistory } from './evidence-sections2.mjs';
+import {
+  renderCheck,
+  renderBuild,
+  renderSecurity,
+  renderConfig,
+  renderChangeHistory,
+} from './evidence-sections2.mjs';
 import { LEDGER_ROWS } from './evidence-ledger.mjs';
 
 function renderLighthouse() {
@@ -37,7 +43,9 @@ function renderLedger() {
   let out = `## 11 LEDGER: CSV with columns ID, requirement, priority, status, evidence file or test, for EVERY ID in the orchestration registry plus CR-01 IDs REQ-017 to REQ-025, SEC-011, SEC-012, DATA-005, PERF-006, A11Y-007. Use the original ID meanings; if IDs were reused, list the old and new meaning.\n\n`;
   out += `\`\`\`csv\nID,requirement,priority,status,evidence file or test\n`;
   for (const row of LEDGER_ROWS) {
-    const escaped = row.map((c) => (c.includes(',') || c.includes('"') ? `"${c.replace(/"/g, '""')}"` : c));
+    const escaped = row.map((c) =>
+      c.includes(',') || c.includes('"') ? `"${c.replace(/"/g, '""')}"` : c
+    );
     out += escaped.join(',') + '\n';
   }
   out += `\`\`\`\n\n`;

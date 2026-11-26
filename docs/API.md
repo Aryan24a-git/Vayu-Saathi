@@ -24,20 +24,20 @@ Standard codes: `BAD_REQUEST`, `VALIDATION_ERROR`, `PAYLOAD_TOO_LARGE`, `RATE_LI
 Liveness probe. Returns `{ status: "ok", timestamp, version }`. Rate limit: 30/min.
 
 ### GET /api/ready
-Readiness probe. Verifies server environment configuration. Rate limit: 30/min.
+Readiness probe. Returns `{ status: "ready", timestamp, llm }` where `llm` is `true` only when `LLM_ENABLED`, `GEMINI_API_KEY` is present, and the configured `GEMINI_MODEL` has not failed with a 404 model-not-found error. Rate limit: 30/min.
 
 ---
 
 ## 2. Air Quality & Geocoding
 
 ### GET /api/geocode?q={city}
-Searches Open-Meteo geocoding database. Query: 2..100 characters. Returns `GeocodingResult[]`. Rate limit: 30/min.
+Searches Open-Meteo geocoding database via `src/server/providers/geocoding.ts`. Query: 2..100 characters. Returns `GeocodingResult[]`. Rate limit: 30/min.
 
 ### GET /api/air-quality?lat={lat}&lon={lon}
-Direct coordinates air quality query. Coordinates rounded to 2 decimal places. Returns `AqiReading` or `502 PROVIDER_UNAVAILABLE`. Rate limit: 30/min.
+Direct coordinates air quality query via `src/server/providers/openMeteoAirQuality.ts`. Coordinates rounded to 2 decimal places. Returns `AqiReading` or `503 PROVIDER_UNAVAILABLE`. Rate limit: 30/min.
 
 ### GET /api/city-scenario?q={city}
-Returns hourly winter smog scenario (hourly PM2.5, hourly wind speed, NAQI). If `q` matches a preset demo scenario (`delhi`, `patna`, `kolkata`, `bengaluru`), returns curated demo scenario with `isSynthetic: true`. Otherwise fetches live Open-Meteo observations with 15-min in-memory LRU caching. Rate limit: 30/min.
+Returns hourly winter smog scenario (hourly PM2.5, hourly wind speed, NAQI). Always geocodes live and fetches live Open-Meteo observations with 15-min in-memory LRU caching (`isSynthetic: false`), returning `404 NOT_FOUND` or `502 PROVIDER_UNAVAILABLE` on failure (never silent synthetic demo data). Rate limit: 30/min.
 
 ---
 
@@ -64,8 +64,8 @@ Synthesizes dynamic playbook items (indoor hacks, emission swaps, pledges) for a
 Multimodal room/window/mask inspection.
 - Body limit: 256 kB (`MAX_AUDIT_BODY_BYTES`) to accommodate compressed Base64 photo.
 - Validates JPEG, PNG, or WebP magic bytes.
-- When `GEMINI_API_KEY` is present: Uses Gemini 1.5 Flash Vision.
-- When key is absent: Returns honest Basic Mode architectural checklist with `isAiInspected: false`.
+- When `GEMINI_API_KEY` is present: Uses configured `GEMINI_MODEL` (default `gemini-3.8-flash`) Vision.
+- When key is absent or model fails: Returns honest Basic Mode architectural checklist with `isAiInspected: false`.
 - Rate limit: 4/min.
 
 ### POST /api/ask

@@ -57,7 +57,6 @@ async function mockUpstreamApis(page: Page): Promise<void> {
     route.fulfill({ json: { results: MOCK_GEOCODE.results } })
   );
   await page.route('**/api/air-quality*', (route: Route) => route.fulfill({ json: MOCK_AQI }));
-  await page.route('**/api/aqi*', (route: Route) => route.fulfill({ json: MOCK_AQI }));
   await page.route('**/api/plan', (route: Route) => route.fulfill({ json: MOCK_PLAN }));
   await page.route('**/api/ask', (route: Route) =>
     route.fulfill({
@@ -128,9 +127,6 @@ test.describe('Journey B — Provider failure → manual AQI fallback', () => {
       return route.fulfill({ status: 503, body: 'Service Unavailable' });
     });
     await page.route('**/api/air-quality*', (route: Route) =>
-      route.fulfill({ status: 503, body: 'Service Unavailable' })
-    );
-    await page.route('**/api/aqi*', (route: Route) =>
       route.fulfill({ status: 503, body: 'Service Unavailable' })
     );
     await page.route('**/api/plan', (route: Route) => route.fulfill({ json: MOCK_PLAN }));

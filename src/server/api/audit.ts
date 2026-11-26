@@ -6,12 +6,13 @@ import {
   MemoryBucketStore,
   getHashedClientKey,
 } from '@/server/security/rateLimit';
-import { readJsonBoundary } from '@/server/security/limits';
+import { MAX_AUDIT_BODY_BYTES, RATE_LIMITS, readJsonBoundary } from '@/server/security/limits';
 import { apiErrorResponse, securityJson } from '@/server/security/response';
 import { getEnv } from '@/server/config/env';
+import { handleGeminiModelError, isLlmModelUnavailable } from '@/server/llm/client';
 import { logger } from '@/lib/logger';
 
-const limiter = new TokenBucketLimiter(30, 60_000, new MemoryBucketStore());
+const limiter = new TokenBucketLimiter(RATE_LIMITS.auditPerMinute, 60_000, new MemoryBucketStore());
 
 export const AuditRequestSchema = z.object({
   focusArea: z.string().min(2).max(100),
@@ -21,10 +22,7 @@ export const AuditRequestSchema = z.object({
   purifier: z.enum(['none', 'hepa_room', 'central']).optional().default('none'),
   kitchenExhaust: z.boolean().optional().default(false),
   budgetTier: z.enum(['zero_cost', 'diy_2000', 'mid_10000', 'premium']).default('zero_cost'),
-  imageBase64: z
-    .string()
-    .max(256 * 1024)
-    .optional(),
+  imageBase64: z.string().max(MAX_AUDIT_BODY_BYTES).optional(),
 });
 
 export interface AuditRequestInput {
@@ -137,7 +135,7 @@ async function inspectWithGeminiVision(
   input: AuditRequestInput
 ): Promise<{ observations: string; immediateFix: string; impactWhy: string } | null> {
   const env = getEnv();
-  if (!env.LLM_ENABLED || !env.GEMINI_API_KEY) return null;
+  if (!env.LLM_ENABLED || !env.GEMINI_API_KEY || isLlmModelUnavailable()) return null;
 
   try {
     const raw = imageBase64.replace(/^data:image\/[a-zA-Z0-9+.-]+;base64,/, '').trim();
@@ -188,7 +186,11 @@ async function inspectWithGeminiVision(
       signal: AbortSignal.timeout(10_000),
     });
 
-    if (!response.ok) return null;
+    if (!response.ok) {
+      const errText = await response.text().catch(() => '');
+      handleGeminiModelError(response.status, env.GEMINI_MODEL, errText);
+      return null;
+    }
     const json = (await response.json()) as {
       candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
     };
@@ -219,7 +221,7 @@ export async function handleAudit(req: NextRequest) {
     );
   }
 
-  const parsed = await readJsonBoundary(req, AuditRequestSchema, requestId, 256 * 1024);
+  const parsed = await readJsonBoundary(req, AuditRequestSchema, requestId, MAX_AUDIT_BODY_BYTES);
   if (!parsed.ok) return apiErrorResponse(parsed.error, parsed.status);
 
   if (parsed.value.imageBase64 && !verifyImageMagicBytes(parsed.value.imageBase64)) {
@@ -258,8 +260,4 @@ export async function handleAudit(req: NextRequest) {
     200,
     { [REQUEST_ID_HEADER]: requestId }
   );
-}
-
-export async function POST(req: NextRequest) {
-  return handleAudit(req);
 }

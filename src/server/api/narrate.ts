@@ -6,12 +6,16 @@ import {
   MemoryBucketStore,
   getHashedClientKey,
 } from '@/server/security/rateLimit';
-import { readJsonBoundary } from '@/server/security/limits';
+import { RATE_LIMITS, readJsonBoundary } from '@/server/security/limits';
 import { apiErrorResponse, securityJson } from '@/server/security/response';
 import { narrate, type NarrativeItem } from '@/server/llm/narrate';
 import { ProfileSchema, createDefaultProfile } from '@/domain/profile';
 
-const limiter = new TokenBucketLimiter(10, 60_000, new MemoryBucketStore());
+const limiter = new TokenBucketLimiter(
+  RATE_LIMITS.planNarratePerMinute,
+  60_000,
+  new MemoryBucketStore()
+);
 
 const NarrateRequestSchema = z.object({
   profile: ProfileSchema.optional(),
@@ -68,8 +72,4 @@ export async function handlePlanNarrate(req: NextRequest) {
     200,
     { [REQUEST_ID_HEADER]: requestId }
   );
-}
-
-export async function POST(req: NextRequest) {
-  return handlePlanNarrate(req);
 }
