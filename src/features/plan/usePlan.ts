@@ -51,14 +51,16 @@ export function usePlan(profile: Profile, reading: AqiReading) {
 
   useEffect(() => {
     if (typeof navigator !== 'undefined' && navigator.onLine === false) {
-      setState('offline');
-      setPlan(readCachedPlan());
+      queueMicrotask(() => {
+        setState('offline');
+        setPlan(readCachedPlan());
+      });
       return;
     }
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
-    setState('loading');
+    queueMicrotask(() => setState('loading'));
     void fetchPlan(profile, reading, controller.signal).then((result) => {
       setRetryAfter(result.retryAfter);
       setPlan(result.plan);

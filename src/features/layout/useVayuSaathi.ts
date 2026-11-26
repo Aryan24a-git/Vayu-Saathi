@@ -80,18 +80,20 @@ export function useVayuSaathi() {
   }, []);
 
   useEffect(() => {
-    setProfile(loadStorage(STORAGE.profile, DEFAULT_PROFILE));
-    setCompletedIds(loadStorage(STORAGE.pledges, []));
-    setHotspots(loadStorage(STORAGE.hotspots, INITIAL_HOTSPOTS));
-    setUpvotedIds(loadStorage(STORAGE.upvotes, []));
-    try {
-      const savedCity = localStorage.getItem(STORAGE.lastCity);
-      if (savedCity && savedCity.trim().length >= 2) {
-        void loadLiveCity(savedCity);
+    queueMicrotask(() => {
+      setProfile(loadStorage(STORAGE.profile, DEFAULT_PROFILE));
+      setCompletedIds(loadStorage(STORAGE.pledges, []));
+      setHotspots(loadStorage(STORAGE.hotspots, INITIAL_HOTSPOTS));
+      setUpvotedIds(loadStorage(STORAGE.upvotes, []));
+      try {
+        const savedCity = localStorage.getItem(STORAGE.lastCity);
+        if (savedCity && savedCity.trim().length >= 2) {
+          void loadLiveCity(savedCity);
+        }
+      } catch {
+        // ignore
       }
-    } catch {
-      // ignore
-    }
+    });
   }, [loadLiveCity]);
 
   const vent = useMemo(
@@ -121,9 +123,17 @@ export function useVayuSaathi() {
     ]);
   }, []);
 
-  useEffect(() => {
-    if (selectedLocation) initGreeting(selectedLocation);
-  }, [selectedLocation, initGreeting]);
+  const defaultMessages = useMemo<ChatMessage[]>(() => {
+    if (!selectedLocation) return [];
+    const { naqi, band } = computeDeterministicImpact(selectedLocation, DEFAULT_PROFILE).aqi;
+    const v = findSafeVentilationWindow(selectedLocation.hourlyPM25, selectedLocation.hourlyWind);
+    return [
+      {
+        role: 'assistant',
+        text: `Namaste! I'm **VayuSaathi**. Right now **${selectedLocation.city}** is at **CPCB NAQI ${naqi} (${band.label})** with PM2.5 at ${selectedLocation.pm25} µg/m³.\n\nYour safest cross-ventilation slot today is **${v.windowLabel}**. Ask me anything in English, Hindi, or Hinglish!`,
+      },
+    ];
+  }, [selectedLocation]);
 
   const handleScenarioChange = (key: string) => {
     const clean = key.replace(/^demo:/, '');
@@ -132,6 +142,7 @@ export function useVayuSaathi() {
       setSelectedLocation({ ...SCENARIOS[clean] });
       setCityError(null);
       setAiPlaybook(null);
+      setChatMessages([]);
       setPlaybookSource('Smart Local Engine');
       showToast(`Loaded demo scenario: ${SCENARIOS[clean].city} (synthetic data).`, 'info');
     }
@@ -227,7 +238,7 @@ export function useVayuSaathi() {
     completedIds,
     hotspots,
     upvotedIds,
-    chatMessages,
+    chatMessages: chatMessages.length > 0 ? chatMessages : defaultMessages,
     setChatMessages,
     isGeneratingAI,
     setIsGeneratingAI,

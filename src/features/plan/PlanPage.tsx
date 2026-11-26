@@ -43,15 +43,17 @@ export function PlanPage() {
 
   useEffect(() => {
     document.querySelector<HTMLElement>('h1')?.focus();
-    try {
-      const saved = localStorage.getItem(PROFILE_KEY);
-      if (saved) {
-        const parsed = ProfileSchema.safeParse(JSON.parse(saved));
-        if (parsed.success) setProfile(parsed.data);
+    queueMicrotask(() => {
+      try {
+        const saved = localStorage.getItem(PROFILE_KEY);
+        if (saved) {
+          const parsed = ProfileSchema.safeParse(JSON.parse(saved));
+          if (parsed.success) setProfile(parsed.data);
+        }
+      } catch {
+        // Keep the safe default profile.
       }
-    } catch {
-      // Keep the safe default profile.
-    }
+    });
   }, []);
 
   const searchCityByName = async () => {

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { MessageCircle, Sparkles, Loader2 } from 'lucide-react';
 import type { LocationScenario, CalculatedImpact } from '@/domain/scenarios';
 import type { VentilationWindow } from '@/domain/naqi';
@@ -52,12 +52,14 @@ export function WhatsAppGenerator({ location, vent, impact }: WhatsAppGeneratorP
   const { showToast } = useToast();
   const [lang, setLang] = useState<'en' | 'hi'>('en');
   const [rwaName, setRwaName] = useState('Green Park / Residents Welfare Group');
-  const [bulletinText, setBulletinText] = useState('');
+  const [customBulletin, setCustomBulletin] = useState<string | null>(null);
   const [isDrafting, setIsDrafting] = useState(false);
 
-  useEffect(() => {
-    setBulletinText(getDeterministicBulletin(lang, rwaName, location, vent, impact));
-  }, [lang, rwaName, location, vent, impact]);
+  const defaultBulletin = useMemo(
+    () => getDeterministicBulletin(lang, rwaName, location, vent, impact),
+    [lang, rwaName, location, vent, impact]
+  );
+  const bulletinText = customBulletin ?? defaultBulletin;
 
   const handleCopy = async () => {
     try {
@@ -90,14 +92,14 @@ export function WhatsAppGenerator({ location, vent, impact }: WhatsAppGeneratorP
       });
       if (res.ok) {
         const data = await res.json();
-        setBulletinText(data.bulletinText);
+        setCustomBulletin(data.bulletinText);
         showToast('Generated fresh RWA advisory!', 'success');
       } else {
-        setBulletinText(getDeterministicBulletin(lang, rwaName, location, vent, impact));
+        setCustomBulletin(null);
         showToast('Generated advisory from local engine.', 'success');
       }
     } catch {
-      setBulletinText(getDeterministicBulletin(lang, rwaName, location, vent, impact));
+      setCustomBulletin(null);
       showToast('Generated advisory from local engine.', 'success');
     } finally {
       setIsDrafting(false);

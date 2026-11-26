@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useAsk } from './useAsk';
 
 const suggested = [
@@ -9,6 +9,18 @@ const suggested = [
   'What is a low-cost indoor protection step?',
 ];
 
+function readStoredConsent(fallback: boolean): boolean {
+  if (typeof window === 'undefined') return fallback;
+  try {
+    const stored = localStorage.getItem('cac_ai_consent_v1');
+    if (stored === 'false') return false;
+    if (stored === 'true') return true;
+    return fallback;
+  } catch {
+    return false;
+  }
+}
+
 export function AssistantBox({
   initialQuestion = '',
   initialConsentEnabled = true,
@@ -16,18 +28,9 @@ export function AssistantBox({
   initialQuestion?: string;
   initialConsentEnabled?: boolean;
 }) {
-  const [consent, setConsent] = useState(initialConsentEnabled);
+  const [consent, setConsent] = useState(() => readStoredConsent(initialConsentEnabled));
   const [question, setQuestion] = useState(initialQuestion);
   const { state, answer, disclaimer, ask } = useAsk(consent);
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem('cac_ai_consent_v1');
-      if (stored === 'false') setConsent(false);
-      if (stored === 'true') setConsent(true);
-    } catch {
-      setConsent(false);
-    }
-  }, []);
   const updateConsent = (enabled: boolean) => {
     setConsent(enabled);
     try {
@@ -63,51 +66,49 @@ export function AssistantBox({
         </p>
       )}
       <form onSubmit={submit} className="mt-3">
-        <label htmlFor="assistant-question" className="block text-sm">
+        <label htmlFor="ask-question" className="block text-sm font-medium">
           Question
         </label>
-        <textarea
-          id="assistant-question"
-          minLength={3}
-          maxLength={300}
-          value={question}
-          onChange={(event) => setQuestion(event.target.value)}
-          className="mt-1 min-h-24 w-full rounded border p-3"
-        />
-        <div className="mt-1 flex items-center justify-between text-xs">
-          <span aria-live="polite">{question.length}/300 characters</span>
+        <div className="mt-1 flex gap-2">
+          <input
+            id="ask-question"
+            value={question}
+            onChange={(event) => setQuestion(event.target.value)}
+            className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            placeholder="Ask about indoor air or precautions"
+          />
           <button
             type="submit"
-            disabled={question.trim().length < 3}
-            className="min-h-11 rounded bg-blue-700 px-4 text-white"
+            disabled={state === 'loading'}
+            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
           >
             Ask
           </button>
         </div>
       </form>
       <div className="mt-3 flex flex-wrap gap-2">
-        {suggested.map((text) => (
+        {suggested.map((item) => (
           <button
-            key={text}
+            key={item}
             type="button"
-            onClick={() => setQuestion(text)}
-            className="rounded-full border px-3 py-2 text-sm"
+            onClick={() => {
+              setQuestion(item);
+              void ask(item);
+            }}
+            className="rounded-full border border-slate-300 px-3 py-1 text-xs"
           >
-            {text}
+            {item}
           </button>
         ))}
       </div>
-      {state === 'loading' && (
-        <p role="status" aria-live="polite" className="mt-3 text-sm">
-          Asking the assistant…
-        </p>
-      )}
-      {answer && (
-        <div className="mt-3 rounded bg-slate-50 p-3 text-sm">
-          <p>{answer}</p>
-          {disclaimer && <p className="mt-2 text-slate-600">{disclaimer}</p>}
-        </div>
-      )}
+      <div role="status" aria-live="polite" className="mt-4 text-sm">
+        {state === 'loading' && <p>Checking guidance…</p>}
+        {answer && (
+          <p className="rounded-lg bg-slate-50 p-3">
+            {answer} <span className="block text-xs text-slate-600">{disclaimer}</span>
+          </p>
+        )}
+      </div>
     </section>
   );
 }

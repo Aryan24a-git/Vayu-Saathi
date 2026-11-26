@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { X } from 'lucide-react';
 import type { HouseholdProfile } from '@/domain/scenarios';
 import { useFocusTrap } from './useFocusTrap';
@@ -19,23 +19,16 @@ interface ProfileDrawerProps {
   onClearData?: () => void;
 }
 
-export function ProfileDrawer({
-  isOpen,
+function ProfileDrawerBody({
   onClose,
   profile,
   onSaveProfile,
   onClearData,
-}: ProfileDrawerProps) {
+}: Omit<ProfileDrawerProps, 'isOpen'>) {
   const [draft, setDraft] = useState<HouseholdProfile>(profile);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useFocusTrap(isOpen, containerRef, onClose);
-
-  useEffect(() => {
-    setDraft(profile);
-  }, [profile, isOpen]);
-
-  if (!isOpen) return null;
+  useFocusTrap(true, containerRef, onClose);
 
   const handleSave = () => {
     onSaveProfile(draft);
@@ -105,5 +98,24 @@ export function ProfileDrawer({
         </div>
       </div>
     </div>
+  );
+}
+
+export function ProfileDrawer({
+  isOpen,
+  onClose,
+  profile,
+  onSaveProfile,
+  onClearData,
+}: ProfileDrawerProps) {
+  if (!isOpen) return null;
+  return (
+    <ProfileDrawerBody
+      key={JSON.stringify(profile)}
+      onClose={onClose}
+      profile={profile}
+      onSaveProfile={onSaveProfile}
+      onClearData={onClearData}
+    />
   );
 }
