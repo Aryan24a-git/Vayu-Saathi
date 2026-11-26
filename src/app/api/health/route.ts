@@ -1,10 +1,8 @@
-// Satisfies: REL-003
-// Health check route.
-
 import { NextResponse } from 'next/server';
+import { securityJson } from '@/server/security/response';
 
-export async function GET() {
-  return NextResponse.json({
+export function GET() {
+  return securityJson({
     status: 'ok',
     timestamp: new Date().toISOString(),
     version: '1.0.0',
