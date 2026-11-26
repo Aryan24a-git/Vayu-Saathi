@@ -1,0 +1,253 @@
+'use client';
+
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import {
+  DEFAULT_PROFILE,
+  computeDeterministicImpact,
+  type HouseholdProfile,
+  type LocationScenario,
+} from '@/domain/scenarios';
+import { findSafeVentilationWindow } from '@/domain/naqi';
+import { buildDeterministicPlaybook } from '@/domain/playbookEngine';
+import { type PlaybookData } from '@/domain/playbookEngine';
+import { INITIAL_HOTSPOTS, type HotspotReport } from '@/features/community/SmogPinboard';
+import type { ChatMessage } from '@/features/copilot/CopilotChat';
+import { fetchLiveIndianCity } from './fetchLiveCity';
+import { useToast } from './ToastContainer';
+
+const STORAGE = {
+  profile: 'vayusaathi_profile_v1',
+  pledges: 'vayusaathi_pledges_v1',
+  hotspots: 'vayusaathi_hotspots_v1',
+  upvotes: 'vayusaathi_upvotes_v1',
+  lastCity: 'vayusaathi_last_city',
+};
+
+function loadStorage<T>(key: string, fallback: T): T {
+  if (typeof window === 'undefined') return fallback;
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function buildGreeting(loc: LocationScenario): ChatMessage {
+  const { naqi, band } = computeDeterministicImpact(loc, DEFAULT_PROFILE).aqi;
+  const hasHourly = !loc.hourlyError && loc.hourlyPM25.length >= 24 && loc.hourlyWind.length >= 24;
+  const v = hasHourly ? findSafeVentilationWindow(loc.hourlyPM25, loc.hourlyWind) : null;
+  const slotNote = v
+    ? `Your safest cross-ventilation slot today is **${v.windowLabel}**.`
+    : 'Hourly forecast unavailable — limit outdoor activity during haze.';
+  return {
+    role: 'assistant',
+    source: 'basic',
+    text: `Namaste! I'm **VayuSaathi**. Right now **${loc.city}** is at **CPCB NAQI ${naqi} (${band.label})** with PM2.5 at ${loc.pm25} µg/m³.\n\n${slotNote} Ask me anything in English, Hindi, or Hinglish!`,
+  };
+}
+
+export function useVayuSaathi() {
+  const { showToast } = useToast();
+  const [selectedLocation, setSelectedLocation] = useState<LocationScenario | null>(null);
+  const [isLoadingCity, setIsLoadingCity] = useState(false);
+  const [cityError, setCityError] = useState<string | null>(null);
+  const [lastCityQuery, setLastCityQuery] = useState<string | null>(null);
+  const [profile, setProfile] = useState<HouseholdProfile>(DEFAULT_PROFILE);
+  const [activeTab, setActiveTab] = useState<'playbook' | 'copilot' | 'community'>('playbook');
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [completedIds, setCompletedIds] = useState<string[]>([]);
+  const [hotspots, setHotspots] = useState<HotspotReport[]>(INITIAL_HOTSPOTS);
+  const [upvotedIds, setUpvotedIds] = useState<string[]>([]);
+  const [playbookSource, setPlaybookSource] = useState<'ai' | 'basic'>('basic');
+  const [aiPlaybook, setAiPlaybook] = useState<PlaybookData | null>(null);
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [isChatLoading, setIsChatLoading] = useState(false);
+
+  const loadLiveCity = useCallback(async (cityQuery: string) => {
+    setIsLoadingCity(true);
+    setCityError(null);
+    setLastCityQuery(cityQuery);
+    try {
+      const newLoc = await fetchLiveIndianCity(cityQuery);
+      if (!newLoc) {
+        setCityError(`Could not find "${cityQuery}". Try Delhi, Lucknow, or Patna.`);
+        return;
+      }
+      setSelectedLocation(newLoc);
+      setAiPlaybook(null);
+      setPlaybookSource('basic');
+      try {
+        localStorage.setItem(STORAGE.lastCity, cityQuery);
+      } catch {
+        // ignore
+      }
+    } catch {
+      setCityError('Live air quality provider unavailable. Retry or enter AQI manually.');
+    } finally {
+      setIsLoadingCity(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      setProfile(loadStorage(STORAGE.profile, DEFAULT_PROFILE));
+      setCompletedIds(loadStorage(STORAGE.pledges, []));
+      setHotspots(loadStorage(STORAGE.hotspots, INITIAL_HOTSPOTS));
+      setUpvotedIds(loadStorage(STORAGE.upvotes, []));
+      try {
+        const savedCity = localStorage.getItem(STORAGE.lastCity);
+        if (savedCity && savedCity.trim().length >= 2) {
+          void loadLiveCity(savedCity);
+        }
+      } catch {
+        // ignore
+      }
+    });
+  }, [loadLiveCity]);
+
+  const vent = useMemo(
+    () =>
+      selectedLocation &&
+      !selectedLocation.hourlyError &&
+      selectedLocation.hourlyPM25.length >= 24 &&
+      selectedLocation.hourlyWind.length >= 24
+        ? findSafeVentilationWindow(selectedLocation.hourlyPM25, selectedLocation.hourlyWind)
+        : null,
+    [selectedLocation]
+  );
+  const impact = useMemo(
+    () => (selectedLocation ? computeDeterministicImpact(selectedLocation, profile) : null),
+    [selectedLocation, profile]
+  );
+  const playbook = useMemo(() => {
+    if (!selectedLocation || !impact) return null;
+    return aiPlaybook || buildDeterministicPlaybook(selectedLocation, profile, vent, impact);
+  }, [aiPlaybook, selectedLocation, profile, vent, impact]);
+
+  const initGreeting = useCallback((loc: LocationScenario) => {
+    setChatMessages([buildGreeting(loc)]);
+  }, []);
+
+  const defaultMessages = useMemo<ChatMessage[]>(() => {
+    return selectedLocation ? [buildGreeting(selectedLocation)] : [];
+  }, [selectedLocation]);
+
+  const handleSaveProfile = (newProfile: HouseholdProfile) => {
+    setProfile(newProfile);
+    setAiPlaybook(null);
+    setPlaybookSource('basic');
+    try {
+      localStorage.setItem(STORAGE.profile, JSON.stringify(newProfile));
+    } catch {
+      // ignore
+    }
+    showToast('Household profile saved — recalculating impact!', 'success');
+  };
+
+  const togglePledge = (id: string) => {
+    const next = completedIds.includes(id)
+      ? completedIds.filter((x) => x !== id)
+      : [...completedIds, id];
+    setCompletedIds(next);
+    try {
+      localStorage.setItem(STORAGE.pledges, JSON.stringify(next));
+    } catch {
+      // ignore
+    }
+  };
+
+  const toggleUpvote = (id: string) => {
+    const isUp = upvotedIds.includes(id);
+    const nextUpvotes = isUp ? upvotedIds.filter((x) => x !== id) : [...upvotedIds, id];
+    setUpvotedIds(nextUpvotes);
+    setHotspots((prev) =>
+      prev.map((h) => (h.id === id ? { ...h, upvotes: isUp ? h.upvotes - 1 : h.upvotes + 1 } : h))
+    );
+    try {
+      localStorage.setItem(STORAGE.upvotes, JSON.stringify(nextUpvotes));
+    } catch {
+      // ignore
+    }
+  };
+
+  const addHotspot = (item: HotspotReport) => {
+    const next = [item, ...hotspots];
+    setHotspots(next);
+    setUpvotedIds((prev) => [...prev, item.id]);
+    try {
+      localStorage.setItem(STORAGE.hotspots, JSON.stringify(next));
+    } catch {
+      // ignore
+    }
+  };
+
+  const removeHotspot = (id: string) => {
+    const next = hotspots.filter((h) => h.id !== id);
+    setHotspots(next);
+    const nextUpvotes = upvotedIds.filter((x) => x !== id);
+    setUpvotedIds(nextUpvotes);
+    try {
+      localStorage.setItem(STORAGE.hotspots, JSON.stringify(next));
+      localStorage.setItem(STORAGE.upvotes, JSON.stringify(nextUpvotes));
+    } catch {
+      // ignore
+    }
+  };
+
+  const clearAllData = () => {
+    try {
+      Object.values(STORAGE).forEach((k) => localStorage.removeItem(k));
+    } catch {
+      // ignore
+    }
+    setSelectedLocation(null);
+    setCityError(null);
+    setLastCityQuery(null);
+    setProfile(DEFAULT_PROFILE);
+    setCompletedIds([]);
+    setHotspots(INITIAL_HOTSPOTS);
+    setUpvotedIds([]);
+    setAiPlaybook(null);
+    setChatMessages([]);
+    showToast('All browser data cleared.', 'info');
+  };
+
+  return {
+    location: selectedLocation,
+    selectedLocation,
+    setLocation: setSelectedLocation,
+    isLoadingCity,
+    cityError,
+    lastCityQuery,
+    loadLiveCity,
+    profile,
+    activeTab,
+    setActiveTab,
+    isProfileOpen,
+    setIsProfileOpen,
+    vent,
+    impact,
+    playbook,
+    playbookSource,
+    setPlaybookSource,
+    completedIds,
+    hotspots,
+    upvotedIds,
+    chatMessages: chatMessages.length > 0 ? chatMessages : defaultMessages,
+    setChatMessages,
+    isGeneratingAI,
+    setIsGeneratingAI,
+    isChatLoading,
+    setIsChatLoading,
+    handleSaveProfile,
+    togglePledge,
+    toggleUpvote,
+    addHotspot,
+    removeHotspot,
+    initGreeting,
+    setAiPlaybook,
+    clearAllData,
+  };
+}

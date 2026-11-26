@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  push:
+    branches: [main, 'feat/**', 'fix/**', 'chore/**']
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: Quality Gate, Audit, E2E & Container Smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Quality Gate (format, lint, typecheck, knip, madge, tests)
+        run: npm run check
+        env:
+          CI: true
+
+      - name: Domain coverage threshold (>=90% lines/funcs, >=70% branches)
+        run: npm run test:coverage
+        env:
+          CI: true
+
+      - name: Production audit gate (--omit=dev high/critical)
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Full audit visibility
+        run: npm audit --audit-level=high
+
+      - name: Production build
+        run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+
+      - name: Client bundle secret grep
+        run: |
+          if grep -rnE "GEMINI_API_KEY|AIzaSy|sk-ant-" .next/static/; then
+            echo "FAIL: secret pattern detected in .next/static"
+            exit 1
+          fi
+          echo "PASS: zero secrets in client bundle"
+
+      - name: Gitleaks secret scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Production E2E tests
+        run: npm run test:e2e
+        env:
+          CI: true
+          NEXT_TELEMETRY_DISABLED: 1
+
+      - name: Upload Playwright traces on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: test-results/
+          retention-days: 7
+
+      - name: Build Docker image and run smoke suite against container
+        run: |
+          docker build -t clear-air-companion:ci .
+          docker run -d --name cac-smoke -p 3000:3000 -e NODE_ENV=production clear-air-companion:ci
+          trap 'docker rm -f cac-smoke || true' EXIT
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:3000/api/health >/dev/null 2>&1; then
+              break
+            fi
+            sleep 1
+          done
+          node scripts/smoke.mjs
