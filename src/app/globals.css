@@ -24,11 +24,72 @@ body {
 
 /* Reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
-  *, ::before, ::after {
+  *,
+  ::before,
+  ::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+@media print {
+  header,
+  nav,
+  .no-print,
+  footer {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+  }
+  article,
+  section {
+    break-inside: avoid;
+  }
+}
+
+@media (forced-colors: active) {
+  * {
+    forced-color-adjust: auto;
+  }
+  button,
+  input,
+  select,
+  textarea,
+  summary {
+    border: 1px solid CanvasText !important;
+  }
+}
+
+button,
+input,
+select,
+textarea,
+summary {
+  min-height: 44px;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.wa-bg {
+  background-color: #efeae2;
+  background-image: radial-gradient(#d8d1c5 0.75px, transparent 0.75px);
+  background-size: 14px 14px;
+}
+
+@keyframes pulseSoft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+.animate-pulse-soft {
+  animation: pulseSoft 1.6s ease-in-out infinite;
 }
 
